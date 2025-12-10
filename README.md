@@ -24,6 +24,13 @@ Run a placeholder webhook (no meeting integration yet):
 uvicorn server_stub.webhook_stub:app --reload
 ```
 
+### ElevenLabs post-call webhook (optional)
+Expose an endpoint to receive ElevenLabs post-call transcripts:
+```bash
+uvicorn server_stub.elevenlabs_webhook:app --reload
+```
+Set the webhook URL in ElevenLabs to `/elevenlabs/webhook`. If you configure a secret, place it in `MEETING_PROVIDER_WEBHOOK_SECRET` so signatures can be verified.
+
 ## Readiness to test
 - Requirements file and code are in place; set env vars before running.
 - Provide a valid audio file (e.g., `example_meeting.mp3`) locally; none is bundled in the repo.
