@@ -1,51 +1,30 @@
-# Data Project Template
+# Evida Coaching Prototype (CLI only)
 
+Process a local coaching session audio file to produce a lifestyle plan using Whisper or ElevenLabs STT plus an OpenAI LLM. Outputs are written to disk as JSON and Markdown. Meeting-provider support is stubbed only.
 
-## Project Organization
+## Quick start
+1) Create a `.env` (see `.env.example`) with at least `OPENAI_API_KEY` set. Add `ELEVENLABS_API_KEY` if using ElevenLabs STT.
+2) Install deps: `pip install -r requirements.txt`
+3) Run the CLI (Whisper example):
+   ```bash
+   python main.py process-local-audio --audio-path ./example_meeting.mp3
+   ```
+   - Place your audio file at `./example_meeting.mp3` (or pass any path you prefer).
+   - Optional notes: `--notes-path ./notes.txt`
+   - Choose provider: `--provider whisper` (default) or `--provider elevenlabs` (use ElevenLabs models such as `scribe_v2`)
+4) Outputs land under `OUTPUT_DIR/<session_id>/` (defaults to `./output/<audio_stem>/`).
 
-```
-├── LICENSE            <- Open-source license if one is chosen
-├── README.md          <- The top-level README for developers using this project
-├── data
-│   ├── external       <- Data from third party sources
-│   ├── interim        <- Intermediate data that has been transformed
-│   ├── processed      <- The final, canonical data sets for modeling
-│   └── raw            <- The original, immutable data dump
-│
-├── models             <- Trained and serialized models, model predictions, or model summaries
-│
-├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
-│                         the creator's initials, and a short `-` delimited description, e.g.
-│                         `1.0-jqp-initial-data-exploration`
-│
-├── references         <- Data dictionaries, manuals, and all other explanatory materials
-│
-├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
-│   └── figures        <- Generated graphics and figures to be used in reporting
-│
-├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
-│                         generated with `pip freeze > requirements.txt`
-│
-└── src                         <- Source code for this project
-    │
-    ├── __init__.py             <- Makes src a Python module
-    │
-    ├── config.py               <- Store useful variables and configuration
-    │
-    ├── dataset.py              <- Scripts to download or generate data
-    │
-    ├── features.py             <- Code to create features for modeling
-    │
-    │    
-    ├── modeling                
-    │   ├── __init__.py 
-    │   ├── predict.py          <- Code to run model inference with trained models          
-    │   └── train.py            <- Code to train models
-    │
-    ├── plots.py                <- Code to create visualizations 
-    │
-    └── services                <- Service classes to connect with external platforms, tools, or APIs
-        └── __init__.py 
+## Commands
+- `python main.py process-local-audio ...` — fully implemented pipeline.
+- `python main.py process-meeting-transcript --conversation-id ...` — stub only; no external calls.
+
+## Server stub
+Run a placeholder webhook (no meeting integration yet):
+```bash
+uvicorn server_stub.webhook_stub:app --reload
 ```
 
---------
+## Readiness to test
+- Requirements file and code are in place; set env vars before running.
+- Provide a valid audio file (e.g., `example_meeting.mp3`) locally; none is bundled in the repo.
+- Network access is required for OpenAI (and ElevenLabs if chosen). Terms and billing apply.

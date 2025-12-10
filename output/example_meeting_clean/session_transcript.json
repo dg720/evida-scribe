@@ -1,0 +1,12 @@
+{
+  "session_id": "example_meeting_clean",
+  "raw_text": "Thanks for joining today. Let's start with how you've been feeling this week. You mentioned in your notes that your sleep has been a bit inconsistent? I'm usually in bed around midnight, but I wake up once or twice. I'm getting about six hours, which leaves me tired in the afternoon. Got it. And how's your activity? Pretty low. I walk maybe 3,000 steps on weekdays, but I'd like to build a routine, maybe morning walks. Great. We can turn that into a clear goal.",
+  "transcript": [
+    {
+      "speaker": "unknown",
+      "start_time": null,
+      "end_time": null,
+      "text": "Thanks for joining today. Let's start with how you've been feeling this week. You mentioned in your notes that your sleep has been a bit inconsistent? I'm usually in bed around midnight, but I wake up once or twice. I'm getting about six hours, which leaves me tired in the afternoon. Got it. And how's your activity? Pretty low. I walk maybe 3,000 steps on weekdays, but I'd like to build a routine, maybe morning walks. Great. We can turn that into a clear goal."
+    }
+  ]
+}

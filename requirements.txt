@@ -1,2 +1,10 @@
+openai
+requests
+fastapi
+uvicorn
+pydantic
+pydantic-settings
+python-dotenv
+typer
 ipykernel
 python-dotenv

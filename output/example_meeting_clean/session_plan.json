@@ -1,0 +1,48 @@
+{
+  "healthy_eating": {
+    "baseline": "Information is incomplete.",
+    "smart_goals": [],
+    "tracking_kpis": [],
+    "evidence_quotes": []
+  },
+  "physical_activity": {
+    "baseline": "Client's physical activity is pretty low, averaging about 3,000 steps on weekdays.",
+    "smart_goals": [
+      "Incorporate morning walks into my routine at least three times a week."
+    ],
+    "tracking_kpis": [
+      "Steps per day",
+      "Frequency of morning walks per week"
+    ],
+    "evidence_quotes": []
+  },
+  "substances": {
+    "baseline": "Information is incomplete.",
+    "smart_goals": [],
+    "tracking_kpis": [],
+    "evidence_quotes": []
+  },
+  "stress_management": {
+    "baseline": "Information is incomplete.",
+    "smart_goals": [],
+    "tracking_kpis": [],
+    "evidence_quotes": []
+  },
+  "sleep": {
+    "baseline": "Client reports inconsistent sleep, going to bed around midnight and waking once or twice, averaging about six hours.",
+    "smart_goals": [
+      "Aim to go to bed by 11:30 PM at least 3 times a week."
+    ],
+    "tracking_kpis": [
+      "Hours of sleep per night",
+      "Number of times waking up at night"
+    ],
+    "evidence_quotes": []
+  },
+  "social_connections": {
+    "baseline": "Information is incomplete.",
+    "smart_goals": [],
+    "tracking_kpis": [],
+    "evidence_quotes": []
+  }
+}
