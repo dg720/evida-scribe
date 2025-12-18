@@ -21,3 +21,17 @@ services:
       # Optional: enable plan generation on webhook ingestion
       # - key: OPENAI_API_KEY
       #   sync: false
+
+  - type: web
+    name: evida-scribe-frontend
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: next-js-meeting-dashboard
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start
+    envVars:
+      # Point the frontend at the backend service URL.
+      # If you rename services or use a custom domain, update this in Render.
+      - key: MEETING_API_BASE_URL
+        value: https://evida-scribe-api.onrender.com

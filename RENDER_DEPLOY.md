@@ -24,10 +24,15 @@ This repo includes a Render blueprint file: `render.yaml`.
 1) Push this repo to GitHub.
 2) In Render, click **New +** → **Blueprint**.
 3) Select your repo and deploy.
-4) After creation, go to the service’s **Environment** tab and set:
+4) The blueprint creates two free-tier services:
+   - `evida-scribe-api` (FastAPI API + ElevenLabs webhook)
+   - `evida-scribe-frontend` (Next.js frontend)
+5) After creation, go to the backend service’s **Environment** tab and set:
    - `CORS_ORIGINS` to your frontend origin (recommended, not `*`)
    - `MEETING_PROVIDER_WEBHOOK_SECRET` if you enabled signature verification in ElevenLabs
    - `OPENAI_API_KEY` if you want the webhook to generate plans (otherwise it will save transcripts only)
+6) Go to the frontend service’s **Environment** tab and ensure:
+   - `MEETING_API_BASE_URL` points to your backend URL (update if you renamed services or use a custom domain).
 
 ### Free tier notes
 - The included `render.yaml` is configured for the free tier and uses `OUTPUT_DIR=/tmp/output`.
