@@ -1,5 +1,11 @@
+"""
+Export helper for the frontend prototype.
+
+Reads the pipeline's on-disk artifacts under `OUTPUT_DIR/<session_id>/` and writes a
+frontend-friendly shape (camelCase fields) into `frontend_data/` for static UI demos.
+"""
+
 import json
-from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -144,4 +150,3 @@ def export_frontend_data(out_dir: Path, source_output_dir: Optional[Path] = None
         json.dump(meetings_list, f, indent=2, ensure_ascii=False)
 
     return {"meetings": len(meetings_list)}
-

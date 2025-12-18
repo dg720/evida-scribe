@@ -69,18 +69,14 @@ Optionally also start an ngrok tunnel (use this to receive ElevenLabs webhooks o
 - `python main.py export-frontend-data ...` exports frontend-friendly JSON from `./output` into `./frontend_data` for the v0/Next UI prototype.
 - `python main.py process-meeting-transcript --conversation-id ...` — stub only; no external calls.
 
-## Server stub
-Run a placeholder webhook (no meeting integration yet):
-```bash
-uvicorn server_stub.webhook_stub:app --reload
-```
-
-### ElevenLabs post-call webhook (optional)
-Expose an endpoint to receive ElevenLabs post-call transcripts:
-```bash
-uvicorn server_stub.elevenlabs_webhook:app --reload
-```
-Set the webhook URL in ElevenLabs to `/elevenlabs/webhook`. If you configure a secret, place it in `MEETING_PROVIDER_WEBHOOK_SECRET` so signatures can be verified.
+## Webhook (ElevenLabs)
+The ElevenLabs post-call webhook is handled by the main FastAPI backend:
+- Endpoint: `POST /elevenlabs/webhook`
+- Run locally:
+  ```bash
+  uvicorn server.api:app --reload --port 8000
+  ```
+If you configure a secret in ElevenLabs, set `MEETING_PROVIDER_WEBHOOK_SECRET` so signatures can be verified.
 
 ## Readiness to test
 - Requirements file and code are in place; set env vars before running.

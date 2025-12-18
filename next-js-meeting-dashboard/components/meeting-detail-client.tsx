@@ -106,16 +106,7 @@ export function MeetingDetailClient({ meeting }: MeetingDetailClientProps) {
             </Button>
           </div>
 
-          {/* Tags */}
-          {meeting.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {meeting.tags.map((tag) => (
-                <Badge key={tag} variant="secondary">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          )}
+          {/* Tags intentionally hidden for now (not wired to meaningful metadata yet). */}
         </div>
 
         {/* Error Alert */}

@@ -122,7 +122,7 @@ evida_coaching_prototype/
 │   ├─ __init__.py
 │   └─ plan_generator.py
 │
-├─ server_stub/
+├─ server/
 │   ├─ __init__.py
 │   └─ webhook_stub.py
 │
@@ -136,7 +136,7 @@ evida_coaching_prototype/
 
 Notes:
 
-* `server_stub/` is only for a future webhook; it must not do real meeting-provider work.
+* Webhooks are handled by the main FastAPI backend in `server/api.py` (see `POST /elevenlabs/webhook`).
 * `meeting_client_stub.py` (if created) must clearly be a placeholder raising `NotImplementedError`.
 
 ---
@@ -501,7 +501,7 @@ Behaviour:
 
 ---
 
-## 10. Server Stub (`server_stub/webhook_stub.py`)
+## 10. Server (`server/api.py`)
 
 Create a minimal FastAPI app for a future webhook (stub only):
 
@@ -597,10 +597,9 @@ The code model must respect these constraints:
    * Generates a structured `LifestylePlan`.
    * Saves outputs (JSON and Markdown) under `OUTPUT_DIR/<session_id>/`.
 3. A stub CLI command `process-meeting-transcript`.
-4. A stub FastAPI app in `server_stub/webhook_stub.py`.
+4. A FastAPI app in `server/api.py` that also exposes `POST /elevenlabs/webhook`.
 5. `requirements.txt` and `.env.example`.
 6. Code that is reasonably documented, especially where API details may need adjusting.
 
 # END OF SPEC
-
 

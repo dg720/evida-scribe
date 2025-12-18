@@ -1,3 +1,14 @@
+"""
+Evida Scribe backend API.
+
+This FastAPI app serves meeting artifacts from `OUTPUT_DIR` (default `./output`) and exposes an
+ElevenLabs post-call webhook at `POST /elevenlabs/webhook` that writes new meeting folders into
+the same directory.
+
+For free-tier deployments with ephemeral storage, the API also serves a small set of demo meetings
+from `seed_data/` so the dashboard isn't empty after restarts.
+"""
+
 import hashlib
 import hmac
 import json
