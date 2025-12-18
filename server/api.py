@@ -85,6 +85,60 @@ def _output_dir() -> Path:
     return Path(os.getenv("OUTPUT_DIR", "./output"))
 
 
+def _seed_data_dir() -> Path:
+    # Seed data shipped with the repo so the UI isn't empty on ephemeral deployments.
+    return Path(os.getenv("SEED_DATA_DIR", "./seed_data"))
+
+
+def _load_seed_meetings() -> tuple[list[Dict[str, Any]], dict[str, Dict[str, Any]]]:
+    """
+    Returns (list_items, detail_by_id) from `seed_data/meetings.json` and/or `seed_data/meetings/*.json`.
+    """
+    base = _seed_data_dir()
+    detail_by_id: dict[str, Dict[str, Any]] = {}
+    list_items: list[Dict[str, Any]] = []
+
+    try:
+        list_path = base / "meetings.json"
+        if list_path.exists():
+            with open(list_path, "r", encoding="utf-8") as f:
+                parsed = json.load(f)
+            if isinstance(parsed, list):
+                list_items = parsed
+    except Exception:
+        list_items = []
+
+    meetings_dir = base / "meetings"
+    if meetings_dir.exists() and meetings_dir.is_dir():
+        for p in sorted(meetings_dir.glob("*.json")):
+            try:
+                with open(p, "r", encoding="utf-8") as f:
+                    detail = json.load(f)
+                meeting_id = detail.get("id") or p.stem
+                if meeting_id:
+                    detail_by_id[str(meeting_id)] = detail
+            except Exception:
+                continue
+
+    # If no list file exists, derive a list from the detail files.
+    if not list_items and detail_by_id:
+        for meeting_id, detail in detail_by_id.items():
+            list_items.append(
+                {
+                    "id": meeting_id,
+                    "patientDisplayName": detail.get("patientDisplayName", meeting_id),
+                    "createdAt": detail.get("createdAt", _iso_from_mtime(meetings_dir / f"{meeting_id}.json")),
+                    "status": detail.get("status", "ready"),
+                    "preview": detail.get("preview", ""),
+                    "tags": detail.get("tags", []) or [],
+                    "hasTranscript": bool(detail.get("hasTranscript", detail.get("transcript") is not None)),
+                    "hasPlan": bool(detail.get("hasPlan", detail.get("plan") is not None)),
+                }
+            )
+
+    return list_items, detail_by_id
+
+
 def _safe_session_dir(base: Path, session_id: str) -> Path:
     base_resolved = base.resolve()
     candidate = (base / session_id).resolve()
@@ -227,38 +281,44 @@ async def elevenlabs_webhook(request: Request):
 @app.get("/api/meetings")
 def list_meetings() -> List[Dict[str, Any]]:
     base = _output_dir()
-    if not base.exists():
-        return []
 
     meetings: List[Dict[str, Any]] = []
-    for session_dir in sorted([p for p in base.iterdir() if p.is_dir()]):
-        session_id = session_dir.name
+    if base.exists():
+        for session_dir in sorted([p for p in base.iterdir() if p.is_dir()]):
+            session_id = session_dir.name
 
-        meta = _read_json(session_dir / "session_meta.json") or {}
-        transcript_raw = _read_json(session_dir / "session_transcript.json")
-        plan_raw = _read_json(session_dir / "session_plan.json")
+            meta = _read_json(session_dir / "session_meta.json") or {}
+            transcript_raw = _read_json(session_dir / "session_transcript.json")
+            plan_raw = _read_json(session_dir / "session_plan.json")
 
-        created_at = meta.get("createdAt") or meta.get("created_at") or _iso_from_mtime(session_dir)
-        patient_display_name = meta.get("patientDisplayName") or meta.get("patient_display_name") or session_id
-        tags = meta.get("tags") or []
+            created_at = meta.get("createdAt") or meta.get("created_at") or _iso_from_mtime(session_dir)
+            patient_display_name = meta.get("patientDisplayName") or meta.get("patient_display_name") or session_id
+            tags = meta.get("tags") or []
 
-        preview_source = ""
-        if transcript_raw:
-            preview_source = (transcript_raw.get("raw_text") or "").strip()
-        preview = (preview_source[:180] + "…") if len(preview_source) > 180 else preview_source
+            preview_source = ""
+            if transcript_raw:
+                preview_source = (transcript_raw.get("raw_text") or "").strip()
+            preview = (preview_source[:180] + "…") if len(preview_source) > 180 else preview_source
 
-        meetings.append(
-            {
-                "id": session_id,
-                "patientDisplayName": patient_display_name,
-                "createdAt": created_at,
-                "status": meta.get("status") or _derive_status(session_dir),
-                "preview": preview,
-                "tags": tags,
-                "hasTranscript": transcript_raw is not None,
-                "hasPlan": plan_raw is not None,
-            }
-        )
+            meetings.append(
+                {
+                    "id": session_id,
+                    "patientDisplayName": patient_display_name,
+                    "createdAt": created_at,
+                    "status": meta.get("status") or _derive_status(session_dir),
+                    "preview": preview,
+                    "tags": tags,
+                    "hasTranscript": transcript_raw is not None,
+                    "hasPlan": plan_raw is not None,
+                }
+            )
+
+    seed_list, _seed_detail_by_id = _load_seed_meetings()
+    existing_ids = {m.get("id") for m in meetings if m.get("id")}
+    for item in seed_list:
+        item_id = item.get("id")
+        if item_id and item_id not in existing_ids:
+            meetings.append(item)
 
     meetings.sort(key=lambda m: m.get("createdAt") or "", reverse=True)
     return meetings
@@ -269,6 +329,13 @@ def get_meeting(meeting_id: str) -> Dict[str, Any]:
     base = _output_dir()
     session_dir = _safe_session_dir(base, meeting_id)
     if not session_dir.exists() or not session_dir.is_dir():
+        seed_list, seed_detail_by_id = _load_seed_meetings()
+        seed = seed_detail_by_id.get(meeting_id)
+        if seed:
+            return seed
+        # Allow lookup by list id even if only list exists.
+        if any(m.get("id") == meeting_id for m in seed_list):
+            raise HTTPException(status_code=404, detail="Seed meeting detail missing")
         raise HTTPException(status_code=404, detail="Meeting not found")
 
     meta = _read_json(session_dir / "session_meta.json") or {}

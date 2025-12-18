@@ -2,7 +2,7 @@ import { getMeetings } from "@/lib/data"
 import { MeetingsClient } from "@/components/meetings-client"
 
 export const metadata = {
-  title: "Evi Scribe",
+  title: "evida scribe",
   description: "Browse recorded meeting profiles, view transcripts, and review generated lifestyle plans.",
 }
 
@@ -15,7 +15,7 @@ export default async function MeetingsPage() {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-8 px-4">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">Evi Scribe</h1>
+          <h1 className="text-3xl font-bold tracking-tight">evida scribe</h1>
           <p className="text-muted-foreground mt-2">
             View recorded meeting profiles, transcripts, and generated lifestyle plans.
           </p>
