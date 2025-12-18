@@ -3,7 +3,7 @@
 This repo supports an “always-on” FastAPI service on Render that:
 - Serves meetings live from `OUTPUT_DIR` (default `./output`)
 - Receives ElevenLabs post-call transcripts at `POST /elevenlabs/webhook`
-- Persists artifacts to a Render persistent disk, so data survives restarts
+- Persists artifacts only if you use a persistent disk (paid). Free tier is ephemeral.
 
 ## What you deploy
 
@@ -17,7 +17,7 @@ This repo supports an “always-on” FastAPI service on Render that:
 - Webhook endpoint:
   - `POST /elevenlabs/webhook`
 
-## Deploy using Render Blueprint (recommended)
+## Deploy using Render Blueprint
 
 This repo includes a Render blueprint file: `render.yaml`.
 
@@ -29,7 +29,12 @@ This repo includes a Render blueprint file: `render.yaml`.
    - `MEETING_PROVIDER_WEBHOOK_SECRET` if you enabled signature verification in ElevenLabs
    - `OPENAI_API_KEY` if you want the webhook to generate plans (otherwise it will save transcripts only)
 
-The service mounts a disk at `/data` and uses `OUTPUT_DIR=/data/output`.
+### Free tier notes
+- The included `render.yaml` is configured for the free tier and uses `OUTPUT_DIR=/tmp/output`.
+- This is ephemeral: data may be lost on restart/redeploy and free services may sleep when idle (webhooks can be unreliable).
+
+### Paid tier (persistent storage)
+If you need durable storage + reliable webhooks, attach a persistent disk and set `OUTPUT_DIR=/data/output` (paid).
 
 ## Deploy manually (no blueprint)
 
@@ -37,10 +42,11 @@ The service mounts a disk at `/data` and uses `OUTPUT_DIR=/data/output`.
    - Runtime: Python
    - Build command: `pip install -r requirements.txt`
    - Start command: `uvicorn server.api:app --host 0.0.0.0 --port $PORT`
-2) Add a **Persistent Disk**:
+2) For free tier, set env var: `OUTPUT_DIR=/tmp/output`
+3) (Optional, paid) Add a **Persistent Disk**:
    - Mount path: `/data`
    - Set env var: `OUTPUT_DIR=/data/output`
-3) Set env vars (recommended):
+4) Set env vars (recommended):
    - `CORS_ORIGINS=https://<your-frontend-host>`
    - `MEETING_PROVIDER_WEBHOOK_SECRET=<your secret>` (optional)
    - `OPENAI_API_KEY=<your key>` (optional)
@@ -60,4 +66,3 @@ Your Next.js/v0 frontend should set:
 - `MEETING_API_BASE_URL=https://<your-render-service>.onrender.com`
 
 If deploying on Render as well, set `CORS_ORIGINS` on the backend to the frontend URL.
-
