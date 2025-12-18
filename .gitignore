@@ -97,3 +97,9 @@ target/
 
 # exclude generated outputs
 /output/
+
+# ---- Monorepo note ----
+# This repo includes a Next.js frontend under `next-js-meeting-dashboard/` which legitimately uses a `lib/` folder.
+# The Python packaging ignore rule above (`lib/`) would otherwise ignore it.
+!next-js-meeting-dashboard/lib/
+!next-js-meeting-dashboard/lib/**

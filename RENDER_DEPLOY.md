@@ -38,6 +38,9 @@ This repo includes a Render blueprint file: `render.yaml`.
 - The included `render.yaml` is configured for the free tier and uses `OUTPUT_DIR=/tmp/output`.
 - This is ephemeral: data may be lost on restart/redeploy and free services may sleep when idle (webhooks can be unreliable).
 
+### Repo note (Next.js `lib/` folder)
+This repo's root `.gitignore` ignores `lib/` for Python packaging, but explicitly allows `next-js-meeting-dashboard/lib/` so Next.js imports like `@/lib/utils` work in deployments.
+
 ### Paid tier (persistent storage)
 If you need durable storage + reliable webhooks, attach a persistent disk and set `OUTPUT_DIR=/data/output` (paid).
 
