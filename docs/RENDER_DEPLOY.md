@@ -37,7 +37,7 @@ This repo includes a Render blueprint file: `render.yaml`.
 ### Free tier notes
 - The included `render.yaml` is configured for the free tier and uses `OUTPUT_DIR=/tmp/output`.
 - This is ephemeral: data may be lost on restart/redeploy and free services may sleep when idle (webhooks can be unreliable).
-- To avoid an “empty dashboard” after a restart, the API also serves demo seed meetings shipped in `seed_data/`.
+- To avoid an “empty dashboard” after a restart, the API also serves demo seed meetings shipped in `examples/seed_data/`.
 
 ### Repo note (Next.js `lib/` folder)
 This repo's root `.gitignore` ignores `lib/` for Python packaging, but explicitly allows `next-js-meeting-dashboard/lib/` so Next.js imports like `@/lib/utils` work in deployments.

@@ -9,9 +9,9 @@ Goal: generate a clean, professional Next.js frontend with v0 so you can browse 
   - `session_plan.json` (see `models.LifestylePlan`)
   - `session_plan.md`
   - `plan_failure.txt` (when plan generation fails)
-- For the frontend prototype, use the pre-made mock data in:
-  - `frontend_data/meetings.json` (list)
-  - `frontend_data/meetings/<id>.json` (detail)
+- For the frontend prototype, sample mock data is included in:
+  - `examples/frontend_data/meetings.json` (list)
+  - `examples/frontend_data/meetings/<id>.json` (detail)
 
 ## Generate/update frontend data from real outputs
 
@@ -130,9 +130,9 @@ Also add:
 - Make the transcript panel scrollable and readable for long content.
 
 Finally, include example data files in the repo (already present):
-- `frontend_data/meetings.json`
-- `frontend_data/meetings/example_meeting_clean.json`
-- `frontend_data/meetings/meeting_2025_01_03.json`
-- `frontend_data/meetings/meeting_2025_01_10.json`
+- `examples/frontend_data/meetings.json`
+- `examples/frontend_data/meetings/example_meeting_clean.json`
+- `examples/frontend_data/meetings/meeting_2025_01_03.json`
+- `examples/frontend_data/meetings/meeting_2025_01_10.json`
 
 Deliver the full code for this Next.js app.

@@ -11,6 +11,8 @@ services:
       - key: OUTPUT_DIR
         # Free tier: ephemeral filesystem only (data may be lost on restart/redeploy)
         value: /tmp/output
+      - key: SEED_DATA_DIR
+        value: /opt/render/project/src/examples/seed_data
       # Set this to your frontend origin(s) once deployed, comma-separated.
       # Example: https://your-frontend.onrender.com,https://your-vercel-app.vercel.app
       - key: CORS_ORIGINS

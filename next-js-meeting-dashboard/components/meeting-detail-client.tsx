@@ -13,6 +13,7 @@ import Link from "next/link"
 import { ChevronLeft, Copy, Download, AlertCircle, FileText, ClipboardList, Save, Pencil, Plus, X } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useEffect, useMemo, useState, useTransition } from "react"
+import { useRouter } from "next/navigation"
 
 interface MeetingDetailClientProps {
   meeting: MeetingDetail
@@ -35,6 +36,7 @@ const domainLabels: Record<keyof LifestylePlan, string> = {
 
 export function MeetingDetailClient({ meeting }: MeetingDetailClientProps) {
   const { toast } = useToast()
+  const router = useRouter()
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, startSave] = useTransition()
 
@@ -42,10 +44,14 @@ export function MeetingDetailClient({ meeting }: MeetingDetailClientProps) {
     return meeting.plan ?? null
   }, [meeting.plan])
 
+  // Local display copy so the UI reflects edits immediately after saving,
+  // even before a server refresh pulls the updated plan from the backend.
+  const [displayPlan, setDisplayPlan] = useState<LifestylePlan | null>(initialPlan)
   const [editablePlan, setEditablePlan] = useState<LifestylePlan | null>(initialPlan)
 
   useEffect(() => {
     setEditablePlan(initialPlan)
+    setDisplayPlan(initialPlan)
   }, [initialPlan])
 
   const handleCopyTranscript = () => {
@@ -59,8 +65,8 @@ export function MeetingDetailClient({ meeting }: MeetingDetailClientProps) {
   }
 
   const handleCopySummary = () => {
-    if (meeting.plan) {
-      const summary = generateSummary(meeting.plan)
+    if (displayPlan) {
+      const summary = generateSummary(displayPlan)
       copyToClipboard(summary)
       toast({
         title: "Copied to clipboard",
@@ -89,6 +95,8 @@ export function MeetingDetailClient({ meeting }: MeetingDetailClientProps) {
         if (!res.ok) throw new Error(await res.text())
         toast({ title: "Plan saved" })
         setIsEditing(false)
+        setDisplayPlan(editablePlan)
+        router.refresh()
       } catch (err) {
         toast({
           title: "Save failed",
@@ -222,11 +230,11 @@ export function MeetingDetailClient({ meeting }: MeetingDetailClientProps) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {meeting.plan && !isEditing ? (
+              {displayPlan && !isEditing ? (
                 <ScrollArea className="h-[600px] pr-4">
                   <Accordion type="multiple" className="w-full">
                     {(Object.keys(domainLabels) as Array<keyof LifestylePlan>).map((domainKey) => {
-                      const domain = meeting.plan![domainKey]
+                      const domain = displayPlan[domainKey]
                       return (
                         <AccordionItem key={domainKey} value={domainKey}>
                           <AccordionTrigger className="text-left">{domainLabels[domainKey]}</AccordionTrigger>

@@ -7,7 +7,7 @@ This repo includes a starter “static data” workflow for generating a hosted 
 - Keep pipeline artifacts under `./output/<session_id>/` (gitignored by default)
 - Export a frontend-friendly JSON shape under `./frontend_data/` (committable) for the UI to read
 
-Prompt + guidance: `V0_PROMPT.md`
+Prompt + guidance: `docs/V0_PROMPT.md`
 
 Export frontend data after running the pipeline:
 ```bash
@@ -57,9 +57,9 @@ Optionally also start an ngrok tunnel (use this to receive ElevenLabs webhooks o
 2) Install deps: `pip install -r requirements.txt`
 3) Run the CLI (Whisper example):
    ```bash
-   python main.py process-local-audio --audio-path ./example_meeting.mp3
+   python main.py process-local-audio --audio-path ./examples/audio/example_meeting.mp3
    ```
-   - Place your audio file at `./example_meeting.mp3` (or pass any path you prefer).
+   - Place your audio file anywhere (or pass any path you prefer).
    - Optional notes: `--notes-path ./notes.txt`
    - Choose provider: `--provider whisper` (default) or `--provider elevenlabs` (use ElevenLabs models such as `scribe_v2`)
 4) Outputs land under `OUTPUT_DIR/<session_id>/` (defaults to `./output/<audio_stem>/`).
@@ -80,5 +80,5 @@ If you configure a secret in ElevenLabs, set `MEETING_PROVIDER_WEBHOOK_SECRET` s
 
 ## Readiness to test
 - Requirements file and code are in place; set env vars before running.
-- Provide a valid audio file (e.g., `example_meeting.mp3`) locally; none is bundled in the repo.
+- Provide a valid audio file (an example is included at `examples/audio/example_meeting.mp3`).
 - Network access is required for OpenAI (and ElevenLabs if chosen). Terms and billing apply.
