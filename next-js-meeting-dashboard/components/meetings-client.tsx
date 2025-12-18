@@ -318,19 +318,16 @@ export function MeetingsClient({ meetings }: MeetingsClientProps) {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => startRefresh(() => router.refresh())}
+                  onClick={() =>
+                    startRefresh(async () => {
+                      setNotes("")
+                      persistNotes("")
+                      toast({ title: "Notes cleared" })
+                    })
+                  }
                   disabled={isRefreshing}
                 >
-                  <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
-                  Refresh
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => startRefresh(async () => await checkForNewMeetings())}
-                  disabled={isRefreshing}
-                >
-                  Check for new meeting
+                  Clear notes
                 </Button>
               </div>
             </CardContent>

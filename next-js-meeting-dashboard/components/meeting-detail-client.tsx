@@ -10,7 +10,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { formatDate, formatTime, copyToClipboard, downloadJSON } from "@/lib/format"
 import type { MeetingDetail, MeetingStatus, LifestylePlan } from "@/lib/types"
 import Link from "next/link"
-import { ChevronLeft, Copy, Download, AlertCircle, FileText, ClipboardList, Save, Pencil } from "lucide-react"
+import { ChevronLeft, Copy, Download, AlertCircle, FileText, ClipboardList, Save, Pencil, Plus, X } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useEffect, useMemo, useState, useTransition } from "react"
 
@@ -38,16 +38,15 @@ export function MeetingDetailClient({ meeting }: MeetingDetailClientProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, startSave] = useTransition()
 
-  const initialPlanJson = useMemo(() => {
-    if (!meeting.plan) return ""
-    return JSON.stringify(meeting.plan, null, 2)
+  const initialPlan = useMemo(() => {
+    return meeting.plan ?? null
   }, [meeting.plan])
 
-  const [planDraft, setPlanDraft] = useState(initialPlanJson)
+  const [editablePlan, setEditablePlan] = useState<LifestylePlan | null>(initialPlan)
 
   useEffect(() => {
-    setPlanDraft(initialPlanJson)
-  }, [initialPlanJson])
+    setEditablePlan(initialPlan)
+  }, [initialPlan])
 
   const handleCopyTranscript = () => {
     if (meeting.transcript) {
@@ -79,14 +78,13 @@ export function MeetingDetailClient({ meeting }: MeetingDetailClientProps) {
   }
 
   const handleSavePlan = () => {
-    if (!meeting.plan) return
+    if (!editablePlan) return
     startSave(async () => {
       try {
-        const parsed = JSON.parse(planDraft)
         const res = await fetch(`/api/meetings/${encodeURIComponent(meeting.id)}/plan`, {
           method: "PUT",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ plan: parsed }),
+          body: JSON.stringify({ plan: editablePlan }),
         })
         if (!res.ok) throw new Error(await res.text())
         toast({ title: "Plan saved" })
@@ -94,10 +92,48 @@ export function MeetingDetailClient({ meeting }: MeetingDetailClientProps) {
       } catch (err) {
         toast({
           title: "Save failed",
-          description: err instanceof Error ? err.message : "Invalid plan JSON",
+          description: err instanceof Error ? err.message : "Unexpected error",
           variant: "destructive",
         })
       }
+    })
+  }
+
+  const updateDomain = (key: keyof LifestylePlan, patch: Partial<LifestylePlan[keyof LifestylePlan]>) => {
+    setEditablePlan((prev) => {
+      if (!prev) return prev
+      return { ...prev, [key]: { ...prev[key], ...patch } }
+    })
+  }
+
+  const addListItem = (key: keyof LifestylePlan, field: "smartGoals" | "trackingKpis") => {
+    setEditablePlan((prev) => {
+      if (!prev) return prev
+      const domain = prev[key]
+      return { ...prev, [key]: { ...domain, [field]: [...domain[field], ""] } }
+    })
+  }
+
+  const removeListItem = (key: keyof LifestylePlan, field: "smartGoals" | "trackingKpis", index: number) => {
+    setEditablePlan((prev) => {
+      if (!prev) return prev
+      const domain = prev[key]
+      return { ...prev, [key]: { ...domain, [field]: domain[field].filter((_, i) => i !== index) } }
+    })
+  }
+
+  const updateListItem = (
+    key: keyof LifestylePlan,
+    field: "smartGoals" | "trackingKpis",
+    index: number,
+    value: string,
+  ) => {
+    setEditablePlan((prev) => {
+      if (!prev) return prev
+      const domain = prev[key]
+      const next = [...domain[field]]
+      next[index] = value
+      return { ...prev, [key]: { ...domain, [field]: next } }
     })
   }
 
@@ -142,7 +178,7 @@ export function MeetingDetailClient({ meeting }: MeetingDetailClientProps) {
               size="sm"
               onClick={() => {
                 setIsEditing((v) => !v)
-                setPlanDraft(initialPlanJson)
+                setEditablePlan(initialPlan)
               }}
               disabled={!meeting.plan}
             >
@@ -251,17 +287,111 @@ export function MeetingDetailClient({ meeting }: MeetingDetailClientProps) {
                     })}
                   </Accordion>
                 </ScrollArea>
-              ) : meeting.plan && isEditing ? (
-                <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground">
-                    Edit the plan as JSON. Changes are saved back to `session_plan.json` and `session_plan.md`.
-                  </p>
-                  <textarea
-                    className="h-[600px] w-full rounded-md border bg-background p-3 font-mono text-sm outline-none focus:ring-2 focus:ring-ring"
-                    value={planDraft}
-                    onChange={(e) => setPlanDraft(e.target.value)}
-                  />
-                </div>
+              ) : editablePlan && isEditing ? (
+                <ScrollArea className="h-[600px] pr-4">
+                  <Accordion type="multiple" className="w-full">
+                    {(Object.keys(domainLabels) as Array<keyof LifestylePlan>).map((domainKey) => {
+                      const domain = editablePlan[domainKey]
+                      return (
+                        <AccordionItem key={domainKey} value={domainKey}>
+                          <AccordionTrigger className="text-left">{domainLabels[domainKey]}</AccordionTrigger>
+                          <AccordionContent>
+                            <div className="space-y-4 pt-2">
+                              <div className="space-y-2">
+                                <h4 className="font-semibold text-sm">Baseline</h4>
+                                <textarea
+                                  className="w-full min-h-[110px] rounded-md border bg-background p-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+                                  value={domain.baseline}
+                                  onChange={(e) => updateDomain(domainKey, { baseline: e.target.value })}
+                                />
+                              </div>
+
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <h4 className="font-semibold text-sm">SMART Goals</h4>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => addListItem(domainKey, "smartGoals")}
+                                  >
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Add
+                                  </Button>
+                                </div>
+                                {domain.smartGoals.length === 0 ? (
+                                  <p className="text-sm text-muted-foreground">No goals yet.</p>
+                                ) : (
+                                  <div className="space-y-2">
+                                    {domain.smartGoals.map((goal, idx) => (
+                                      <div key={idx} className="flex gap-2">
+                                        <input
+                                          className="flex-1 rounded-md border bg-background px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-ring"
+                                          value={goal}
+                                          onChange={(e) =>
+                                            updateListItem(domainKey, "smartGoals", idx, e.target.value)
+                                          }
+                                          placeholder="e.g. Walk 10 minutes after lunch, 3x/week"
+                                        />
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => removeListItem(domainKey, "smartGoals", idx)}
+                                          aria-label="Remove goal"
+                                        >
+                                          <X className="h-4 w-4" />
+                                        </Button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <h4 className="font-semibold text-sm">Tracking KPIs</h4>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => addListItem(domainKey, "trackingKpis")}
+                                  >
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Add
+                                  </Button>
+                                </div>
+                                {domain.trackingKpis.length === 0 ? (
+                                  <p className="text-sm text-muted-foreground">No KPIs yet.</p>
+                                ) : (
+                                  <div className="space-y-2">
+                                    {domain.trackingKpis.map((kpi, idx) => (
+                                      <div key={idx} className="flex gap-2">
+                                        <input
+                                          className="flex-1 rounded-md border bg-background px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-ring"
+                                          value={kpi}
+                                          onChange={(e) =>
+                                            updateListItem(domainKey, "trackingKpis", idx, e.target.value)
+                                          }
+                                          placeholder="e.g. Steps per day"
+                                        />
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => removeListItem(domainKey, "trackingKpis", idx)}
+                                          aria-label="Remove KPI"
+                                        >
+                                          <X className="h-4 w-4" />
+                                        </Button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      )
+                    })}
+                  </Accordion>
+                </ScrollArea>
               ) : (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <ClipboardList className="h-12 w-12 text-muted-foreground/50 mb-3" />
