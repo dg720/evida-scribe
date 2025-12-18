@@ -9,8 +9,8 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Meeting Profiles",
-  description: "Clinical meeting profiles dashboard for lifestyle coaching",
+  title: "Evi Scribe",
+  description: "Review meeting transcripts and generated lifestyle plans in a clean clinical dashboard.",
   generator: "v0.app",
   icons: {
     icon: [

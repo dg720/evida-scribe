@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useMemo, useState, useTransition } from "react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -9,7 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { formatDate } from "@/lib/format"
 import type { MeetingListItem, MeetingStatus } from "@/lib/types"
 import Link from "next/link"
-import { Search, Filter } from "lucide-react"
+import { Filter, RefreshCw, Search } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { useMobile } from "@/hooks/use-mobile"
 
 interface MeetingsClientProps {
@@ -25,6 +26,8 @@ const statusConfig: Record<MeetingStatus, { label: string; variant: "default" | 
 export function MeetingsClient({ meetings }: MeetingsClientProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState<MeetingStatus | "all">("all")
+  const [isRefreshing, startRefresh] = useTransition()
+  const router = useRouter()
   const isMobile = useMobile()
 
   const filteredMeetings = useMemo(() => {
@@ -61,6 +64,15 @@ export function MeetingsClient({ meetings }: MeetingsClientProps) {
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <Filter className="h-4 w-4 text-muted-foreground" />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => startRefresh(() => router.refresh())}
+            disabled={isRefreshing}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
+            Refresh
+          </Button>
           <Button
             variant={statusFilter === "all" ? "default" : "outline"}
             size="sm"
@@ -112,13 +124,6 @@ export function MeetingsClient({ meetings }: MeetingsClientProps) {
                   <Badge variant={statusConfig[meeting.status].variant}>{statusConfig[meeting.status].label}</Badge>
                 </div>
                 <p className="text-sm text-muted-foreground line-clamp-2">{meeting.preview}</p>
-                <div className="flex flex-wrap gap-1">
-                  {meeting.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
                 <Link href={`/meetings/${meeting.id}`}>
                   <Button className="w-full" size="sm">
                     View Details
@@ -137,7 +142,6 @@ export function MeetingsClient({ meetings }: MeetingsClientProps) {
                 <TableHead>Date</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Preview</TableHead>
-                <TableHead>Tags</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -153,20 +157,6 @@ export function MeetingsClient({ meetings }: MeetingsClientProps) {
                   </TableCell>
                   <TableCell className="max-w-md">
                     <p className="line-clamp-2 text-sm text-muted-foreground">{meeting.preview}</p>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {meeting.tags.slice(0, 2).map((tag) => (
-                        <Badge key={tag} variant="secondary" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
-                      {meeting.tags.length > 2 && (
-                        <Badge variant="secondary" className="text-xs">
-                          +{meeting.tags.length - 2}
-                        </Badge>
-                      )}
-                    </div>
                   </TableCell>
                   <TableCell className="text-right">
                     <Link href={`/meetings/${meeting.id}`}>
