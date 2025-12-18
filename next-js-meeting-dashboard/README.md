@@ -12,5 +12,4 @@ To switch to the live FastAPI backend, set:
 MEETING_API_BASE_URL=http://localhost:8000
 ```
 
-See `.env.local.example` and the root `README.md` for backend commands.
-
+See `.env.local.example`, the root `README.md`, and `RENDER_DEPLOY.md` for deployment.

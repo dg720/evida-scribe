@@ -30,11 +30,24 @@ For a “live” frontend (no redeploy needed), run the FastAPI backend that rea
 - Endpoints:
   - `GET http://localhost:8000/api/meetings`
   - `GET http://localhost:8000/api/meetings/<meeting_id>`
+  - `POST http://localhost:8000/elevenlabs/webhook` (ElevenLabs post-call transcript webhook)
 
 ### v0 frontend → backend
 The uploaded v0 project lives at `next-js-meeting-dashboard/`. It can use either:
 - Static JSON: reads from `next-js-meeting-dashboard/frontend_data/` (default)
 - Live API: set `MEETING_API_BASE_URL=http://localhost:8000` in the Next.js environment and it will fetch from the backend instead of filesystem.
+
+## One-command local dev (API + webhook + frontend)
+If you're running the Next.js frontend locally and want all moving parts started together:
+
+```powershell
+.\scripts\dev.ps1
+```
+
+Optionally also start an ngrok tunnel (use this to receive ElevenLabs webhooks on your local machine):
+```powershell
+.\scripts\dev.ps1 -Ngrok
+```
 
 ## Quick start
 1) Create a `.env` (see `.env.example`) with at least `OPENAI_API_KEY` set. Add `ELEVENLABS_API_KEY` if using ElevenLabs STT.

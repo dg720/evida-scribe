@@ -1,11 +1,19 @@
+import hashlib
+import hmac
+import json
 import os
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+
+from llm.plan_generator import PlanGenerationError, generate_lifestyle_plan
+from models import SessionTranscript, TranscriptUtterance
+from utils.io_utils import ensure_output_dir, save_failure_outputs, save_session_outputs
 
 
 def _iso_from_mtime(path: Path) -> str:
@@ -16,8 +24,6 @@ def _iso_from_mtime(path: Path) -> str:
 def _read_json(path: Path) -> Optional[Dict[str, Any]]:
     if not path.exists():
         return None
-    import json
-
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
@@ -103,6 +109,119 @@ app.add_middleware(
 @app.get("/healthz")
 def healthz():
     return {"ok": True}
+
+
+def _webhook_secret() -> Optional[str]:
+    return os.getenv("MEETING_PROVIDER_WEBHOOK_SECRET") or os.getenv("ELEVENLABS_WEBHOOK_SECRET")
+
+
+def _parse_signature_header(signature_header: str) -> tuple[Optional[int], Optional[str]]:
+    """
+    Expected format similar to: 't=1739537297,v1=abcdef...' (or v0).
+    Returns (timestamp, signature_hex) or (None, None) on failure.
+    """
+    try:
+        parts = [p.strip() for p in signature_header.split(",")]
+        t_part = next((p for p in parts if p.startswith("t=")), None)
+        v_part = next((p for p in parts if p.startswith("v1=")), None) or next(
+            (p for p in parts if p.startswith("v0=")), None
+        )
+        if not t_part or not v_part:
+            return None, None
+        timestamp = int(t_part.split("=", 1)[1])
+        sig = v_part.split("=", 1)[1]
+        return timestamp, sig
+    except Exception:
+        return None, None
+
+
+def _verify_signature(payload: bytes, signature_header: Optional[str]) -> bool:
+    secret = _webhook_secret()
+    if not secret:
+        return True
+    if not signature_header:
+        return False
+
+    timestamp, signature_hex = _parse_signature_header(signature_header)
+    if timestamp is None or signature_hex is None:
+        return False
+
+    # Reject stale signatures (30-minute tolerance)
+    tolerance_cutoff = int(time.time()) - 30 * 60
+    if timestamp < tolerance_cutoff:
+        return False
+
+    full_payload = f"{timestamp}.{payload.decode('utf-8', errors='replace')}"
+    mac = hmac.new(
+        key=secret.encode("utf-8"),
+        msg=full_payload.encode("utf-8"),
+        digestmod=hashlib.sha256,
+    )
+    expected = mac.hexdigest()
+    signature_hex = signature_hex.removeprefix("v0=").removeprefix("v1=")
+    return hmac.compare_digest(expected, signature_hex)
+
+
+@app.post("/elevenlabs/webhook")
+async def elevenlabs_webhook(request: Request):
+    """
+    Receives ElevenLabs post-call transcript payloads, persists artifacts under OUTPUT_DIR, and
+    (optionally) generates a lifestyle plan if OPENAI_API_KEY is configured.
+    """
+    raw_body = await request.body()
+    signature = (
+        request.headers.get("Elevenlabs-Signature")
+        or request.headers.get("ElevenLabs-Signature")
+        or request.headers.get("X-Elevenlabs-Signature")
+        or request.headers.get("X-ElevenLabs-Signature")
+    )
+    if not _verify_signature(raw_body, signature):
+        raise HTTPException(status_code=401, detail="Invalid signature")
+
+    try:
+        payload = json.loads(raw_body.decode("utf-8"))
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON payload")
+
+    data = payload.get("data") or {}
+    convo_id = data.get("conversation_id") or data.get("id") or "unknown"
+    transcript_items = data.get("transcript") or []
+
+    utterances: list[TranscriptUtterance] = []
+    for item in transcript_items:
+        msg = item.get("message") or item.get("text") or ""
+        if not msg:
+            continue
+        speaker = item.get("role") or item.get("speaker") or "unknown"
+        utterances.append(TranscriptUtterance(speaker=speaker, text=msg))
+
+    raw_text = "\n".join(u.text for u in utterances)
+    session_transcript = SessionTranscript(session_id=convo_id, raw_text=raw_text, transcript=utterances)
+
+    # Always persist transcript at minimum.
+    base = ensure_output_dir()
+    session_dir = base / convo_id
+    session_dir.mkdir(parents=True, exist_ok=True)
+    with open(session_dir / "session_transcript.json", "w", encoding="utf-8") as f:
+        json.dump(session_transcript.model_dump(), f, indent=2, ensure_ascii=False)
+
+    # Generate plan if possible; if not configured, leave meeting as "processing".
+    if not os.getenv("OPENAI_API_KEY"):
+        return {"status": "ok", "conversation_id": convo_id, "session_dir": str(session_dir), "plan": "skipped"}
+
+    try:
+        plan, _ = generate_lifestyle_plan(session_transcript, notes="")
+    except PlanGenerationError as exc:
+        session_dir = save_failure_outputs(convo_id, session_transcript, exc.raw_response, str(exc))
+        return {
+            "status": "plan_failed",
+            "conversation_id": convo_id,
+            "session_dir": str(session_dir),
+            "error": str(exc),
+        }
+
+    session_dir = save_session_outputs(convo_id, session_transcript, plan)
+    return {"status": "ok", "conversation_id": convo_id, "session_dir": str(session_dir)}
 
 
 @app.get("/api/meetings")
