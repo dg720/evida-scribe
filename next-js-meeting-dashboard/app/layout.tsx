@@ -10,7 +10,7 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "evida scribe",
+  title: "Evida Scribe",
   description: "Review meeting transcripts and generated lifestyle plans in a clean, clinical dashboard.",
   icons: {
     icon: [{ url: "/icon.svg", type: "image/svg+xml" }],

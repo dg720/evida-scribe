@@ -122,3 +122,67 @@ def generate_lifestyle_plan(transcript: SessionTranscript, notes: str) -> Tuple[
         raise PlanGenerationError("LLM response did not match schema", raw_response=raw_json) from exc
 
     return plan, raw_json
+
+
+def generate_meeting_title(transcript_text: str) -> str:
+    """
+    Generate a short 2–4 word title for a meeting based on transcript content.
+
+    Returns a safe fallback if the model output cannot be parsed.
+    """
+    api_key = settings.openai_api_key or os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        return "Untitled Meeting"
+
+    client = OpenAI(api_key=api_key)
+
+    prompt = f"""
+You create short meeting titles.
+
+Rules:
+- Output JSON only.
+- Title must be 2 to 4 words.
+- Use plain ASCII letters/numbers and spaces only.
+- No punctuation.
+- No names or sensitive personal data.
+
+Return:
+{{ "title": "<2-4 word title>" }}
+
+TRANSCRIPT:
+{(transcript_text or '').strip()[:4000]}
+""".strip()
+
+    try:
+        response = client.responses.create(
+            model=settings.openai_llm_model,
+            input=prompt,
+            response_format={"type": "json_object"},
+        )
+        raw = response.output[0].content[0].text
+    except TypeError:
+        chat_resp = client.chat.completions.create(
+            model=settings.openai_llm_model,
+            messages=[
+                {"role": "system", "content": "You are a JSON-only responder. Reply with JSON."},
+                {"role": "user", "content": prompt},
+            ],
+            response_format={"type": "json_object"},
+        )
+        raw = chat_resp.choices[0].message.content  # type: ignore[attr-defined]
+
+    try:
+        data = json.loads(raw or "{}")
+        title = str(data.get("title") or "").strip()
+    except Exception:
+        title = ""
+
+    # Hard safety: keep it short and simple.
+    cleaned = "".join(ch for ch in title if ch.isalnum() or ch == " ").strip()
+    cleaned = " ".join(cleaned.split())
+    words = cleaned.split(" ")
+    if 2 <= len(words) <= 4:
+        return cleaned
+
+    # Fallback: derive a generic title.
+    return "Coaching Session"

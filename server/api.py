@@ -13,6 +13,7 @@ import hashlib
 import hmac
 import json
 import os
+import shutil
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -22,7 +23,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
-from llm.plan_generator import PlanGenerationError, generate_lifestyle_plan
+from llm.plan_generator import PlanGenerationError, generate_lifestyle_plan, generate_meeting_title
 from models import SessionTranscript, TranscriptUtterance
 from utils.io_utils import ensure_output_dir, save_failure_outputs, save_session_outputs
 
@@ -270,6 +271,31 @@ async def elevenlabs_webhook(request: Request):
     with open(session_dir / "session_transcript.json", "w", encoding="utf-8") as f:
         json.dump(session_transcript.model_dump(), f, indent=2, ensure_ascii=False)
 
+    created_at = datetime.now(tz=timezone.utc).isoformat().replace("+00:00", "Z")
+    title = convo_id
+    if os.getenv("OPENAI_API_KEY"):
+        try:
+            title = generate_meeting_title(raw_text)
+        except Exception:
+            title = convo_id
+
+    # Persist lightweight metadata for list views (safe even on ephemeral storage).
+    meta_path = session_dir / "session_meta.json"
+    try:
+        with open(meta_path, "w", encoding="utf-8") as f:
+            json.dump(
+                {
+                    "createdAt": created_at,
+                    "patientDisplayName": title,
+                    "tags": [],
+                },
+                f,
+                indent=2,
+                ensure_ascii=False,
+            )
+    except Exception:
+        pass
+
     # Generate plan if possible; if not configured, leave meeting as "processing".
     if not os.getenv("OPENAI_API_KEY"):
         return {"status": "ok", "conversation_id": convo_id, "session_dir": str(session_dir), "plan": "skipped"}
@@ -408,3 +434,23 @@ def get_artifact(meeting_id: str, artifact_name: str):
         raise HTTPException(status_code=404, detail="Artifact not found")
 
     return FileResponse(path)
+
+
+@app.delete("/api/meetings/{meeting_id}")
+def delete_meeting(meeting_id: str):
+    """
+    Delete a meeting's on-disk artifacts under OUTPUT_DIR/<meeting_id>/.
+
+    This only affects the live OUTPUT_DIR store (seed meetings shipped in `seed_data/` are not deleted).
+    """
+    base = _output_dir()
+    session_dir = _safe_session_dir(base, meeting_id)
+    if not session_dir.exists() or not session_dir.is_dir():
+        raise HTTPException(status_code=404, detail="Meeting not found")
+
+    try:
+        shutil.rmtree(session_dir)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to delete meeting: {exc}")
+
+    return {"status": "deleted", "id": meeting_id}

@@ -220,10 +220,9 @@ export function MeetingDetailClient({ meeting }: MeetingDetailClientProps) {
             <CardContent>
               {meeting.transcript ? (
                 <Tabs defaultValue="formatted" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
+                  <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="formatted">Formatted</TabsTrigger>
                     <TabsTrigger value="raw">Raw Text</TabsTrigger>
-                    <TabsTrigger value="voice">Voice Agent</TabsTrigger>
                   </TabsList>
                   <TabsContent value="formatted" className="mt-4">
                     <ScrollArea className="h-[600px] pr-4">
@@ -255,17 +254,6 @@ export function MeetingDetailClient({ meeting }: MeetingDetailClientProps) {
                         {meeting.transcript.rawText}
                       </pre>
                     </ScrollArea>
-                  </TabsContent>
-                  <TabsContent value="voice" className="mt-4">
-                    <div className="h-[600px] flex flex-col gap-3">
-                      <p className="text-sm text-muted-foreground">
-                        Talk to the voice agent to capture a new session. If you are running in a shared environment,
-                        ensure you are not sharing sensitive patient information.
-                      </p>
-                      <div className="flex-1 rounded-lg border bg-background p-3">
-                        <elevenlabs-convai agent-id="agent_6301kc515z2eep9tjh2exmc0h9ka" />
-                      </div>
-                    </div>
                   </TabsContent>
                 </Tabs>
               ) : (
