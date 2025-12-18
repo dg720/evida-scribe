@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState, useTransition } from "react"
+import { useEffect, useMemo, useRef, useState, useTransition } from "react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -32,6 +32,41 @@ export function MeetingsClient({ meetings }: MeetingsClientProps) {
   const router = useRouter()
   const isMobile = useMobile()
   const { toast } = useToast()
+
+  const [notes, setNotes] = useState("")
+  const [notesStatus, setNotesStatus] = useState<"idle" | "saving" | "saved" | "error">("idle")
+  const notesSaveTimer = useRef<number | null>(null)
+  const [lastSeenMeetingId, setLastSeenMeetingId] = useState<string | null>(meetings[0]?.id ?? null)
+  const lastSeenMeetingIdRef = useRef<string | null>(meetings[0]?.id ?? null)
+
+  // Keep in sync as server-provided meetings change on refresh/navigation.
+  useEffect(() => {
+    setLastSeenMeetingId(meetings[0]?.id ?? null)
+    lastSeenMeetingIdRef.current = meetings[0]?.id ?? null
+  }, [meetings])
+
+  useEffect(() => {
+    // Load existing draft notes (single-user) when opening the Voice Agent tab.
+    fetch("/api/notes/current", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data && typeof data.notes === "string") setNotes(data.notes)
+      })
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    lastSeenMeetingIdRef.current = lastSeenMeetingId
+  }, [lastSeenMeetingId])
+
+  useEffect(() => {
+    // Best-effort: poll periodically while the dashboard is open.
+    // This helps auto-refresh when a new meeting transcript arrives.
+    const interval = window.setInterval(() => {
+      void checkForNewMeetings()
+    }, 15_000)
+    return () => window.clearInterval(interval)
+  }, [])
 
   const filteredMeetings = useMemo(() => {
     return meetings.filter((meeting) => {
@@ -73,6 +108,40 @@ export function MeetingsClient({ meetings }: MeetingsClientProps) {
         })
       }
     })
+  }
+
+  const persistNotes = (value: string) => {
+    if (notesSaveTimer.current) window.clearTimeout(notesSaveTimer.current)
+    setNotesStatus("saving")
+    notesSaveTimer.current = window.setTimeout(async () => {
+      try {
+        const res = await fetch("/api/notes/current", {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ notes: value }),
+        })
+        if (!res.ok) throw new Error(await res.text())
+        setNotesStatus("saved")
+      } catch {
+        setNotesStatus("error")
+      }
+    }, 500)
+  }
+
+  const checkForNewMeetings = async () => {
+    try {
+      const res = await fetch("/api/meetings", { cache: "no-store" })
+      if (!res.ok) return
+      const data = (await res.json()) as Array<{ id?: string }>
+      const newestId = data?.[0]?.id
+      if (newestId && newestId !== lastSeenMeetingIdRef.current) {
+        setLastSeenMeetingId(newestId)
+        toast({ title: "New meeting received", description: "Refreshing dashboard…" })
+        router.refresh()
+      }
+    } catch {
+      // ignore polling errors
+    }
   }
 
   return (
@@ -174,8 +243,8 @@ export function MeetingsClient({ meetings }: MeetingsClientProps) {
                   <TableHead>Date</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Preview</TableHead>
-                  <TableHead className="text-right">Delete</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="text-right" />
+                  <TableHead className="text-right" />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -215,17 +284,62 @@ export function MeetingsClient({ meetings }: MeetingsClientProps) {
       </TabsContent>
 
       <TabsContent value="voice">
-        <Card>
-          <CardContent className="p-6 space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Talk to the voice agent to capture a new session. Avoid sharing sensitive patient information in shared
-              environments.
-            </p>
-            <div className="min-h-[520px] rounded-lg border bg-background p-3">
-              <elevenlabs-convai agent-id="agent_6301kc515z2eep9tjh2exmc0h9ka" />
-            </div>
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 py-2">
+          <Card className="lg:col-span-2">
+            <CardContent className="p-6 space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h3 className="font-semibold">Notes</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Type notes during the call. These are used to generate the plan when the transcript arrives.
+                  </p>
+                </div>
+                <div className="text-xs text-muted-foreground whitespace-nowrap">
+                  {notesStatus === "saving"
+                    ? "Saving…"
+                    : notesStatus === "saved"
+                      ? "Saved"
+                      : notesStatus === "error"
+                        ? "Save failed"
+                        : ""}
+                </div>
+              </div>
+              <textarea
+                className="min-h-[520px] w-full rounded-md border bg-background p-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+                placeholder="e.g. HPI, ROS, assessment, plan…"
+                value={notes}
+                onChange={(e) => {
+                  const v = e.target.value
+                  setNotes(v)
+                  persistNotes(v)
+                }}
+              />
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => startRefresh(() => router.refresh())}
+                  disabled={isRefreshing}
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
+                  Refresh
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => startRefresh(async () => await checkForNewMeetings())}
+                  disabled={isRefreshing}
+                >
+                  Check for new meeting
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="flex items-start justify-center">
+            <elevenlabs-convai agent-id="agent_6301kc515z2eep9tjh2exmc0h9ka" />
+          </div>
+        </div>
       </TabsContent>
     </Tabs>
   )

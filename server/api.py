@@ -59,6 +59,31 @@ def _convert_plan(plan_snake: Dict[str, Any]) -> Dict[str, Any]:
     return out
 
 
+def _convert_plan_to_snake(plan_camel: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Convert frontend plan shape (camelCase keys) to on-disk snake_case JSON.
+    """
+    out: Dict[str, Any] = {}
+    for domain_key, domain_val in (plan_camel or {}).items():
+        if not isinstance(domain_val, dict):
+            continue
+        snake_domain_key = []
+        for ch in str(domain_key):
+            if ch.isupper():
+                snake_domain_key.append("_")
+                snake_domain_key.append(ch.lower())
+            else:
+                snake_domain_key.append(ch)
+        snake_key = "".join(snake_domain_key)
+        out[snake_key] = {
+            "baseline": domain_val.get("baseline", ""),
+            "smart_goals": domain_val.get("smartGoals", []) or [],
+            "tracking_kpis": domain_val.get("trackingKpis", []) or [],
+            "evidence_quotes": domain_val.get("evidenceQuotes", []) or [],
+        }
+    return out
+
+
 def _convert_transcript(transcript_snake: Dict[str, Any]) -> Dict[str, Any]:
     utterances = []
     for u in transcript_snake.get("transcript", []) or []:
@@ -151,6 +176,41 @@ def _load_seed_meetings() -> tuple[list[Dict[str, Any]], dict[str, Dict[str, Any
     return list_items, detail_by_id
 
 
+def _notes_draft_path() -> Path:
+    # Single-user draft notes store. On free-tier deployments this is ephemeral (OUTPUT_DIR=/tmp/output).
+    return _output_dir() / "_notes_current.json"
+
+
+def _load_current_notes() -> str:
+    path = _notes_draft_path()
+    try:
+        if not path.exists():
+            return ""
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return str(data.get("notes") or "")
+    except Exception:
+        return ""
+
+
+def _save_current_notes(notes: str) -> None:
+    ensure_output_dir()
+    path = _notes_draft_path()
+    tmp = path.with_suffix(".tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump({"notes": notes}, f, indent=2, ensure_ascii=False)
+    tmp.replace(path)
+
+
+def _clear_current_notes() -> None:
+    try:
+        path = _notes_draft_path()
+        if path.exists():
+            path.unlink()
+    except Exception:
+        pass
+
+
 def _safe_session_dir(base: Path, session_id: str) -> Path:
     base_resolved = base.resolve()
     candidate = (base / session_id).resolve()
@@ -175,6 +235,24 @@ app.add_middleware(
 @app.get("/healthz")
 def healthz():
     return {"ok": True}
+
+
+@app.get("/api/notes/current")
+def get_current_notes():
+    return {"notes": _load_current_notes()}
+
+
+@app.put("/api/notes/current")
+async def put_current_notes(request: Request):
+    try:
+        payload = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON")
+    notes = payload.get("notes")
+    if notes is None:
+        raise HTTPException(status_code=400, detail='Missing field "notes"')
+    _save_current_notes(str(notes))
+    return {"status": "ok"}
 
 
 def _webhook_secret() -> Optional[str]:
@@ -271,11 +349,21 @@ async def elevenlabs_webhook(request: Request):
     with open(session_dir / "session_transcript.json", "w", encoding="utf-8") as f:
         json.dump(session_transcript.model_dump(), f, indent=2, ensure_ascii=False)
 
+    # Snapshot the current draft notes and persist them into the session folder.
+    notes = _load_current_notes().strip()
+    if notes:
+        try:
+            with open(session_dir / "notes.txt", "w", encoding="utf-8") as f:
+                f.write(notes)
+        except Exception:
+            pass
+    _clear_current_notes()
+
     created_at = datetime.now(tz=timezone.utc).isoformat().replace("+00:00", "Z")
     title = convo_id
     if os.getenv("OPENAI_API_KEY"):
         try:
-            title = generate_meeting_title(raw_text)
+            title = generate_meeting_title(raw_text, notes=notes)
         except Exception:
             title = convo_id
 
@@ -301,7 +389,7 @@ async def elevenlabs_webhook(request: Request):
         return {"status": "ok", "conversation_id": convo_id, "session_dir": str(session_dir), "plan": "skipped"}
 
     try:
-        plan, _ = generate_lifestyle_plan(session_transcript, notes="")
+        plan, _ = generate_lifestyle_plan(session_transcript, notes=notes)
     except PlanGenerationError as exc:
         session_dir = save_failure_outputs(convo_id, session_transcript, exc.raw_response, str(exc))
         return {
@@ -454,3 +542,47 @@ def delete_meeting(meeting_id: str):
         raise HTTPException(status_code=500, detail=f"Failed to delete meeting: {exc}")
 
     return {"status": "deleted", "id": meeting_id}
+
+
+@app.put("/api/meetings/{meeting_id}/plan")
+async def update_meeting_plan(meeting_id: str, request: Request):
+    """
+    Update a meeting plan (session_plan.json + session_plan.md) for OUTPUT_DIR/<meeting_id>/.
+    """
+    base = _output_dir()
+    session_dir = _safe_session_dir(base, meeting_id)
+    if not session_dir.exists() or not session_dir.is_dir():
+        raise HTTPException(status_code=404, detail="Meeting not found")
+
+    try:
+        payload = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON")
+
+    plan = payload.get("plan") if isinstance(payload, dict) else None
+    if not isinstance(plan, dict):
+        raise HTTPException(status_code=400, detail='Missing field "plan"')
+
+    plan_snake = _convert_plan_to_snake(plan)
+
+    plan_json_path = session_dir / "session_plan.json"
+    with open(plan_json_path, "w", encoding="utf-8") as f:
+        json.dump(plan_snake, f, indent=2, ensure_ascii=False)
+
+    # Regenerate markdown from snake_case plan shape to match existing artifact naming.
+    md_path = session_dir / "session_plan.md"
+    with open(md_path, "w", encoding="utf-8") as f:
+        f.write(f"# Lifestyle Plan for session {meeting_id}\n\n")
+        for domain_name, domain in plan_snake.items():
+            title = domain_name.replace("_", " ").title()
+            f.write(f"## {title}\n\n")
+            f.write(f"**Baseline**\n\n{domain.get('baseline','')}\n\n")
+            f.write("**SMART Goals**\n\n")
+            for goal in domain.get("smart_goals", []) or []:
+                f.write(f"- {goal}\n")
+            f.write("\n**Tracking KPIs**\n\n")
+            for kpi in domain.get("tracking_kpis", []) or []:
+                f.write(f"- {kpi}\n")
+            f.write("\n\n")
+
+    return {"status": "ok"}

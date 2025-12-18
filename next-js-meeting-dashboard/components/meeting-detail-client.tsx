@@ -10,8 +10,9 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { formatDate, formatTime, copyToClipboard, downloadJSON } from "@/lib/format"
 import type { MeetingDetail, MeetingStatus, LifestylePlan } from "@/lib/types"
 import Link from "next/link"
-import { ChevronLeft, Copy, Download, AlertCircle, FileText, ClipboardList } from "lucide-react"
+import { ChevronLeft, Copy, Download, AlertCircle, FileText, ClipboardList, Save, Pencil } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { useEffect, useMemo, useState, useTransition } from "react"
 
 interface MeetingDetailClientProps {
   meeting: MeetingDetail
@@ -34,6 +35,19 @@ const domainLabels: Record<keyof LifestylePlan, string> = {
 
 export function MeetingDetailClient({ meeting }: MeetingDetailClientProps) {
   const { toast } = useToast()
+  const [isEditing, setIsEditing] = useState(false)
+  const [isSaving, startSave] = useTransition()
+
+  const initialPlanJson = useMemo(() => {
+    if (!meeting.plan) return ""
+    return JSON.stringify(meeting.plan, null, 2)
+  }, [meeting.plan])
+
+  const [planDraft, setPlanDraft] = useState(initialPlanJson)
+
+  useEffect(() => {
+    setPlanDraft(initialPlanJson)
+  }, [initialPlanJson])
 
   const handleCopyTranscript = () => {
     if (meeting.transcript) {
@@ -61,6 +75,29 @@ export function MeetingDetailClient({ meeting }: MeetingDetailClientProps) {
     toast({
       title: "Download started",
       description: "Meeting data downloaded as JSON",
+    })
+  }
+
+  const handleSavePlan = () => {
+    if (!meeting.plan) return
+    startSave(async () => {
+      try {
+        const parsed = JSON.parse(planDraft)
+        const res = await fetch(`/api/meetings/${encodeURIComponent(meeting.id)}/plan`, {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ plan: parsed }),
+        })
+        if (!res.ok) throw new Error(await res.text())
+        toast({ title: "Plan saved" })
+        setIsEditing(false)
+      } catch (err) {
+        toast({
+          title: "Save failed",
+          description: err instanceof Error ? err.message : "Invalid plan JSON",
+          variant: "destructive",
+        })
+      }
     })
   }
 
@@ -100,6 +137,24 @@ export function MeetingDetailClient({ meeting }: MeetingDetailClientProps) {
               <FileText className="h-4 w-4 mr-2" />
               Copy Summary
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setIsEditing((v) => !v)
+                setPlanDraft(initialPlanJson)
+              }}
+              disabled={!meeting.plan}
+            >
+              <Pencil className="h-4 w-4 mr-2" />
+              {isEditing ? "Cancel Edit" : "Edit Plan"}
+            </Button>
+            {isEditing && (
+              <Button variant="default" size="sm" onClick={handleSavePlan} disabled={isSaving}>
+                <Save className="h-4 w-4 mr-2" />
+                {isSaving ? "Saving..." : "Save Plan"}
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={handleDownloadJSON}>
               <Download className="h-4 w-4 mr-2" />
               Download JSON
@@ -131,7 +186,7 @@ export function MeetingDetailClient({ meeting }: MeetingDetailClientProps) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {meeting.plan ? (
+              {meeting.plan && !isEditing ? (
                 <ScrollArea className="h-[600px] pr-4">
                   <Accordion type="multiple" className="w-full">
                     {(Object.keys(domainLabels) as Array<keyof LifestylePlan>).map((domainKey) => {
@@ -196,6 +251,17 @@ export function MeetingDetailClient({ meeting }: MeetingDetailClientProps) {
                     })}
                   </Accordion>
                 </ScrollArea>
+              ) : meeting.plan && isEditing ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    Edit the plan as JSON. Changes are saved back to `session_plan.json` and `session_plan.md`.
+                  </p>
+                  <textarea
+                    className="h-[600px] w-full rounded-md border bg-background p-3 font-mono text-sm outline-none focus:ring-2 focus:ring-ring"
+                    value={planDraft}
+                    onChange={(e) => setPlanDraft(e.target.value)}
+                  />
+                </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <ClipboardList className="h-12 w-12 text-muted-foreground/50 mb-3" />

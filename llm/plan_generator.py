@@ -124,7 +124,7 @@ def generate_lifestyle_plan(transcript: SessionTranscript, notes: str) -> Tuple[
     return plan, raw_json
 
 
-def generate_meeting_title(transcript_text: str) -> str:
+def generate_meeting_title(transcript_text: str, notes: str = "") -> str:
     """
     Generate a short 2–4 word title for a meeting based on transcript content.
 
@@ -151,6 +151,9 @@ Return:
 
 TRANSCRIPT:
 {(transcript_text or '').strip()[:4000]}
+
+NOTES:
+{(notes or '').strip()[:2000]}
 """.strip()
 
     try:
