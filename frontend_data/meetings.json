@@ -1,0 +1,32 @@
+[
+  {
+    "id": "example_meeting_clean",
+    "patientDisplayName": "Demo Patient (Sleep + Activity)",
+    "createdAt": "2025-12-01T10:15:00Z",
+    "status": "ready",
+    "preview": "Thanks for joining today. Let's start with how you've been feeling this week. You mentioned in your notes that your sleep has been a bit inconsistent? I'm usually in bed around midnight…",
+    "tags": ["demo", "coaching"],
+    "hasTranscript": true,
+    "hasPlan": true
+  },
+  {
+    "id": "meeting_2025_01_03",
+    "patientDisplayName": "Demo Patient (Processing)",
+    "createdAt": "2025-01-03T09:05:00Z",
+    "status": "processing",
+    "preview": "Coach: Before we start, what would feel like a win for you by the end of today? Client: I want a plan I can actually follow…",
+    "tags": ["demo"],
+    "hasTranscript": true,
+    "hasPlan": false
+  },
+  {
+    "id": "meeting_2025_01_10",
+    "patientDisplayName": "Demo Patient (Plan Failed)",
+    "createdAt": "2025-01-10T16:40:00Z",
+    "status": "failed",
+    "preview": "Coach: I see you wrote that afternoons are your toughest time. What tends to happen then? Client: I crash, and I snack without thinking…",
+    "tags": ["demo", "error"],
+    "hasTranscript": true,
+    "hasPlan": false
+  }
+]

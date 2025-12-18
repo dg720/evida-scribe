@@ -23,7 +23,9 @@ load_dotenv()
 
 
 class Settings(BaseSettings):
-    openai_api_key: str = Field(..., env="OPENAI_API_KEY")
+    # Optional at import time so non-LLM utilities (e.g., exporting frontend data) can run
+    # without requiring OpenAI credentials. Commands that need OpenAI validate at runtime.
+    openai_api_key: Optional[str] = Field(default=None, env="OPENAI_API_KEY")
     elevenlabs_api_key: Optional[str] = Field(default=None, env="ELEVENLABS_API_KEY")
 
     openai_transcribe_model: str = Field(
@@ -60,6 +62,3 @@ try:
 except ValidationError as exc:
     missing_keys = [err["loc"][0] for err in exc.errors()]
     raise RuntimeError(f"Missing required environment variables: {missing_keys}") from exc
-
-if not settings.openai_api_key:
-    raise RuntimeError("OPENAI_API_KEY is required for the prototype to run.")

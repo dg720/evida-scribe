@@ -1,0 +1,120 @@
+{
+  "id": "example_meeting_clean",
+  "patientDisplayName": "Jane Smith",
+  "createdAt": "2025-01-03T14:30:00Z",
+  "status": "ready",
+  "preview": "Discussed nutrition goals, exercise routine, and stress management strategies.",
+  "tags": ["nutrition", "exercise", "stress"],
+  "hasTranscript": true,
+  "hasPlan": true,
+  "transcript": {
+    "rawText": "Coach: Good afternoon, Jane. How have you been feeling this week?\n\nClient: Hi! I've been doing pretty well. I've been trying to eat healthier and exercise more.\n\nCoach: That's great to hear. Can you tell me more about your nutrition goals?\n\nClient: Sure. I want to eat more vegetables and cut down on processed foods. I've been meal prepping on Sundays.\n\nCoach: Excellent strategy. How about your exercise routine?\n\nClient: I've started walking 30 minutes every morning before work. It really helps me feel more energized.\n\nCoach: That's wonderful progress. How are you managing stress?\n\nClient: I've been practicing meditation for 10 minutes each evening. It helps me wind down before bed.",
+    "utterances": [
+      {
+        "speaker": "coach",
+        "startTime": 0,
+        "endTime": 5.2,
+        "text": "Good afternoon, Jane. How have you been feeling this week?"
+      },
+      {
+        "speaker": "client",
+        "startTime": 5.5,
+        "endTime": 12.8,
+        "text": "Hi! I've been doing pretty well. I've been trying to eat healthier and exercise more."
+      },
+      {
+        "speaker": "coach",
+        "startTime": 13.0,
+        "endTime": 17.5,
+        "text": "That's great to hear. Can you tell me more about your nutrition goals?"
+      },
+      {
+        "speaker": "client",
+        "startTime": 18.0,
+        "endTime": 28.2,
+        "text": "Sure. I want to eat more vegetables and cut down on processed foods. I've been meal prepping on Sundays."
+      },
+      {
+        "speaker": "coach",
+        "startTime": 28.5,
+        "endTime": 32.0,
+        "text": "Excellent strategy. How about your exercise routine?"
+      },
+      {
+        "speaker": "client",
+        "startTime": 32.5,
+        "endTime": 42.1,
+        "text": "I've started walking 30 minutes every morning before work. It really helps me feel more energized."
+      },
+      {
+        "speaker": "coach",
+        "startTime": 42.5,
+        "endTime": 47.0,
+        "text": "That's wonderful progress. How are you managing stress?"
+      },
+      {
+        "speaker": "client",
+        "startTime": 47.5,
+        "endTime": 56.8,
+        "text": "I've been practicing meditation for 10 minutes each evening. It helps me wind down before bed."
+      }
+    ]
+  },
+  "plan": {
+    "healthyEating": {
+      "baseline": "Client currently struggles with processed food intake and irregular eating patterns. Shows motivation for change with Sunday meal prep initiative.",
+      "smartGoals": [
+        "Increase vegetable intake to 5 servings per day within 4 weeks",
+        "Reduce processed food consumption by 50% over the next 2 months"
+      ],
+      "trackingKpis": ["Daily vegetable servings logged in food diary", "Weekly processed food purchases tracked"],
+      "evidenceQuotes": [
+        "I want to eat more vegetables and cut down on processed foods",
+        "I've been meal prepping on Sundays"
+      ]
+    },
+    "physicalActivity": {
+      "baseline": "Recently started morning walking routine. Previously sedentary lifestyle with minimal structured exercise.",
+      "smartGoals": [
+        "Maintain 30-minute morning walks 5 days per week",
+        "Add 2 strength training sessions per week by month 2"
+      ],
+      "trackingKpis": ["Weekly step count average", "Number of completed morning walks per week"],
+      "evidenceQuotes": [
+        "I've started walking 30 minutes every morning before work",
+        "It really helps me feel more energized"
+      ]
+    },
+    "substances": {
+      "baseline": "No concerning substance use patterns reported during session.",
+      "smartGoals": ["Maintain current healthy relationship with substances"],
+      "trackingKpis": ["Self-reported substance use check-ins monthly"]
+    },
+    "stressManagement": {
+      "baseline": "Client has proactively started evening meditation practice. Reports positive effects on relaxation and sleep preparation.",
+      "smartGoals": [
+        "Continue daily 10-minute meditation practice",
+        "Add one additional stress-reduction activity (yoga or journaling) within 3 weeks"
+      ],
+      "trackingKpis": ["Daily meditation completion tracked", "Weekly stress level rating (1-10 scale)"],
+      "evidenceQuotes": [
+        "I've been practicing meditation for 10 minutes each evening",
+        "It helps me wind down before bed"
+      ]
+    },
+    "sleep": {
+      "baseline": "Sleep quality appears improved with evening meditation routine. No major sleep concerns reported.",
+      "smartGoals": [
+        "Maintain consistent bedtime routine with meditation",
+        "Achieve 7-8 hours of sleep per night consistently"
+      ],
+      "trackingKpis": ["Sleep duration tracked via wearable or diary", "Sleep quality self-rating each morning"],
+      "evidenceQuotes": ["It helps me wind down before bed"]
+    },
+    "socialConnections": {
+      "baseline": "No specific social connection concerns or goals discussed during this session.",
+      "smartGoals": ["Assess social support network in next session"],
+      "trackingKpis": ["Social interactions logged weekly"]
+    }
+  }
+}

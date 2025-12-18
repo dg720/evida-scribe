@@ -1,0 +1,117 @@
+{
+  "id": "meeting_2025_01_03",
+  "patientDisplayName": "Demo Patient (Processing)",
+  "createdAt": "2025-01-03T09:05:00Z",
+  "status": "processing",
+  "preview": "Coach: Before we start, what would feel like a win for you by the end of today? Client: I want a plan I can actually follow…",
+  "tags": ["demo"],
+  "hasTranscript": true,
+  "hasPlan": false,
+  "transcript": {
+    "rawText": "Coach: Before we start, what would feel like a win for you by the end of today?\nClient: I want a plan I can actually follow. I keep starting and stopping.\nCoach: What usually gets in the way?\nClient: Work gets busy, and then I stay up late to catch up on life. I end up skipping breakfast and eating whatever is around.\nCoach: So energy and routine are the big themes.\nClient: Yeah. And my steps are low. I sit most of the day.\nCoach: If we aimed for one change that feels doable this week, what would it be?\nClient: I could walk after lunch. Even ten minutes.\nCoach: Great. And sleep—what time are you usually in bed?\nClient: Around 12:30. I want that closer to 11:30.\nCoach: Let’s note that as a target. We’ll also track what makes it easier or harder.\nClient: That sounds good. I like tracking if it’s simple.\nCoach: We’ll keep it simple. Any injuries or limitations for walking?\nClient: No injuries. Just low motivation.\nCoach: Motivation often follows action. Let’s pick a minimum standard that counts as success.\nClient: Ten minutes after lunch, three days.\nCoach: Perfect.\n\n[System note: Plan generation is still processing for this meeting in the prototype UI.]",
+    "utterances": [
+      {
+        "speaker": "coach",
+        "startTime": null,
+        "endTime": null,
+        "text": "Before we start, what would feel like a win for you by the end of today?"
+      },
+      {
+        "speaker": "client",
+        "startTime": null,
+        "endTime": null,
+        "text": "I want a plan I can actually follow. I keep starting and stopping."
+      },
+      {
+        "speaker": "coach",
+        "startTime": null,
+        "endTime": null,
+        "text": "What usually gets in the way?"
+      },
+      {
+        "speaker": "client",
+        "startTime": null,
+        "endTime": null,
+        "text": "Work gets busy, and then I stay up late to catch up on life. I end up skipping breakfast and eating whatever is around."
+      },
+      {
+        "speaker": "coach",
+        "startTime": null,
+        "endTime": null,
+        "text": "So energy and routine are the big themes."
+      },
+      {
+        "speaker": "client",
+        "startTime": null,
+        "endTime": null,
+        "text": "Yeah. And my steps are low. I sit most of the day."
+      },
+      {
+        "speaker": "coach",
+        "startTime": null,
+        "endTime": null,
+        "text": "If we aimed for one change that feels doable this week, what would it be?"
+      },
+      {
+        "speaker": "client",
+        "startTime": null,
+        "endTime": null,
+        "text": "I could walk after lunch. Even ten minutes."
+      },
+      {
+        "speaker": "coach",
+        "startTime": null,
+        "endTime": null,
+        "text": "Great. And sleep—what time are you usually in bed?"
+      },
+      {
+        "speaker": "client",
+        "startTime": null,
+        "endTime": null,
+        "text": "Around 12:30. I want that closer to 11:30."
+      },
+      {
+        "speaker": "coach",
+        "startTime": null,
+        "endTime": null,
+        "text": "Let’s note that as a target. We’ll also track what makes it easier or harder."
+      },
+      {
+        "speaker": "client",
+        "startTime": null,
+        "endTime": null,
+        "text": "That sounds good. I like tracking if it’s simple."
+      },
+      {
+        "speaker": "coach",
+        "startTime": null,
+        "endTime": null,
+        "text": "We’ll keep it simple. Any injuries or limitations for walking?"
+      },
+      {
+        "speaker": "client",
+        "startTime": null,
+        "endTime": null,
+        "text": "No injuries. Just low motivation."
+      },
+      {
+        "speaker": "coach",
+        "startTime": null,
+        "endTime": null,
+        "text": "Motivation often follows action. Let’s pick a minimum standard that counts as success."
+      },
+      {
+        "speaker": "client",
+        "startTime": null,
+        "endTime": null,
+        "text": "Ten minutes after lunch, three days."
+      },
+      {
+        "speaker": "coach",
+        "startTime": null,
+        "endTime": null,
+        "text": "Perfect."
+      }
+    ]
+  }
+}

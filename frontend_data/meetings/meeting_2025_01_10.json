@@ -1,0 +1,88 @@
+{
+  "id": "meeting_2025_01_10",
+  "patientDisplayName": "Demo Patient (Plan Failed)",
+  "createdAt": "2025-01-10T16:40:00Z",
+  "status": "failed",
+  "preview": "Coach: I see you wrote that afternoons are your toughest time. What tends to happen then? Client: I crash, and I snack without thinking…",
+  "tags": ["demo", "error"],
+  "hasTranscript": true,
+  "hasPlan": false,
+  "errorMessage": "Plan generation failed: LLM response did not match schema\n\nRaw LLM response:\n{ \"sleep\": \"11pm\" }",
+  "transcript": {
+    "rawText": "Coach: I see you wrote that afternoons are your toughest time. What tends to happen then?\nClient: I crash, and I snack without thinking. Then I feel guilty and skip dinner, and later I’m starving.\nCoach: So it’s a cycle: low energy → snacks → guilt → irregular meals.\nClient: Exactly.\nCoach: What’s the smallest interruption to the cycle that feels realistic?\nClient: Maybe having something planned around 3pm.\nCoach: Like a prepared snack?\nClient: Yeah. If it’s already there.\nCoach: Any sleep issues contributing to the afternoon crash?\nClient: I sleep late, and I wake up tired.\nCoach: Okay. Let’s capture that. For now, the UI will show this transcript and the error state for the plan.\nClient: That’s fine.",
+    "utterances": [
+      {
+        "speaker": "coach",
+        "startTime": null,
+        "endTime": null,
+        "text": "I see you wrote that afternoons are your toughest time. What tends to happen then?"
+      },
+      {
+        "speaker": "client",
+        "startTime": null,
+        "endTime": null,
+        "text": "I crash, and I snack without thinking. Then I feel guilty and skip dinner, and later I’m starving."
+      },
+      {
+        "speaker": "coach",
+        "startTime": null,
+        "endTime": null,
+        "text": "So it’s a cycle: low energy → snacks → guilt → irregular meals."
+      },
+      {
+        "speaker": "client",
+        "startTime": null,
+        "endTime": null,
+        "text": "Exactly."
+      },
+      {
+        "speaker": "coach",
+        "startTime": null,
+        "endTime": null,
+        "text": "What’s the smallest interruption to the cycle that feels realistic?"
+      },
+      {
+        "speaker": "client",
+        "startTime": null,
+        "endTime": null,
+        "text": "Maybe having something planned around 3pm."
+      },
+      {
+        "speaker": "coach",
+        "startTime": null,
+        "endTime": null,
+        "text": "Like a prepared snack?"
+      },
+      {
+        "speaker": "client",
+        "startTime": null,
+        "endTime": null,
+        "text": "Yeah. If it’s already there."
+      },
+      {
+        "speaker": "coach",
+        "startTime": null,
+        "endTime": null,
+        "text": "Any sleep issues contributing to the afternoon crash?"
+      },
+      {
+        "speaker": "client",
+        "startTime": null,
+        "endTime": null,
+        "text": "I sleep late, and I wake up tired."
+      },
+      {
+        "speaker": "coach",
+        "startTime": null,
+        "endTime": null,
+        "text": "Okay. Let’s capture that. For now, the UI will show this transcript and the error state for the plan."
+      },
+      {
+        "speaker": "client",
+        "startTime": null,
+        "endTime": null,
+        "text": "That’s fine."
+      }
+    ]
+  }
+}

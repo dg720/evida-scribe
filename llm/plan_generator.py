@@ -13,8 +13,6 @@ logger = get_logger(__name__)
 
 # Allow direct env loading alongside settings for flexibility.
 load_dotenv()
-OPENAI_API_KEY = settings.openai_api_key or os.getenv("OPENAI_API_KEY")
-client = OpenAI(api_key=OPENAI_API_KEY)
 
 PROMPT_TEMPLATE = """
 You are a health coaching documentation assistant.
@@ -74,6 +72,11 @@ class PlanGenerationError(Exception):
 
 
 def generate_lifestyle_plan(transcript: SessionTranscript, notes: str) -> Tuple[LifestylePlan, str]:
+    api_key = settings.openai_api_key or os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise PlanGenerationError("OPENAI_API_KEY is required to generate a lifestyle plan.")
+
+    client = OpenAI(api_key=api_key)
     transcript_text = transcript.raw_text
     prompt = (
         PROMPT_TEMPLATE.replace("<<TRANSCRIPT_TEXT>>", transcript_text or "")

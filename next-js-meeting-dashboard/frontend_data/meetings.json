@@ -1,0 +1,32 @@
+[
+  {
+    "id": "example_meeting_clean",
+    "patientDisplayName": "Jane Smith",
+    "createdAt": "2025-01-03T14:30:00Z",
+    "status": "ready",
+    "preview": "Discussed nutrition goals, exercise routine, and stress management strategies.",
+    "tags": ["nutrition", "exercise", "stress"],
+    "hasTranscript": true,
+    "hasPlan": true
+  },
+  {
+    "id": "meeting_2025_01_03",
+    "patientDisplayName": "John Doe",
+    "createdAt": "2025-01-03T10:00:00Z",
+    "status": "ready",
+    "preview": "Initial consultation covering all lifestyle domains and establishing baseline.",
+    "tags": ["initial-consult", "comprehensive"],
+    "hasTranscript": true,
+    "hasPlan": true
+  },
+  {
+    "id": "meeting_2025_01_10",
+    "patientDisplayName": "Sarah Johnson",
+    "createdAt": "2025-01-10T16:45:00Z",
+    "status": "processing",
+    "preview": "Follow-up session on sleep patterns and social connections.",
+    "tags": ["follow-up", "sleep"],
+    "hasTranscript": true,
+    "hasPlan": false
+  }
+]

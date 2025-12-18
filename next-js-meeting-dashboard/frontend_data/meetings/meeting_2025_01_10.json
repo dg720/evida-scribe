@@ -1,0 +1,27 @@
+{
+  "id": "meeting_2025_01_10",
+  "patientDisplayName": "Sarah Johnson",
+  "createdAt": "2025-01-10T16:45:00Z",
+  "status": "processing",
+  "preview": "Follow-up session on sleep patterns and social connections.",
+  "tags": ["follow-up", "sleep"],
+  "hasTranscript": true,
+  "hasPlan": false,
+  "transcript": {
+    "rawText": "Coach: Hi Sarah, welcome back. How have things been going with your sleep?\n\nClient: Better, actually. I've been trying to go to bed earlier.",
+    "utterances": [
+      {
+        "speaker": "coach",
+        "startTime": 0,
+        "endTime": 5.8,
+        "text": "Hi Sarah, welcome back. How have things been going with your sleep?"
+      },
+      {
+        "speaker": "client",
+        "startTime": 6.2,
+        "endTime": 11.5,
+        "text": "Better, actually. I've been trying to go to bed earlier."
+      }
+    ]
+  }
+}

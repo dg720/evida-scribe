@@ -1,0 +1,66 @@
+{
+  "id": "meeting_2025_01_03",
+  "patientDisplayName": "John Doe",
+  "createdAt": "2025-01-03T10:00:00Z",
+  "status": "ready",
+  "preview": "Initial consultation covering all lifestyle domains and establishing baseline.",
+  "tags": ["initial-consult", "comprehensive"],
+  "hasTranscript": true,
+  "hasPlan": true,
+  "transcript": {
+    "rawText": "Coach: Welcome, John. This is your first session with us. How are you feeling today?\n\nClient: A bit nervous, but excited to get started on improving my health.\n\nCoach: That's completely normal. Let's talk about your current lifestyle habits across different areas.",
+    "utterances": [
+      {
+        "speaker": "coach",
+        "startTime": 0,
+        "endTime": 6.5,
+        "text": "Welcome, John. This is your first session with us. How are you feeling today?"
+      },
+      {
+        "speaker": "client",
+        "startTime": 7.0,
+        "endTime": 13.2,
+        "text": "A bit nervous, but excited to get started on improving my health."
+      },
+      {
+        "speaker": "coach",
+        "startTime": 13.5,
+        "endTime": 20.0,
+        "text": "That's completely normal. Let's talk about your current lifestyle habits across different areas."
+      }
+    ]
+  },
+  "plan": {
+    "healthyEating": {
+      "baseline": "Client reports inconsistent eating patterns and frequent fast food consumption.",
+      "smartGoals": ["Prepare 3 home-cooked meals per week for the next month"],
+      "trackingKpis": ["Number of home-cooked meals per week"],
+      "evidenceQuotes": []
+    },
+    "physicalActivity": {
+      "baseline": "Sedentary desk job with minimal physical activity outside of work.",
+      "smartGoals": ["Walk 15 minutes during lunch break 3 times per week"],
+      "trackingKpis": ["Lunch break walks completed per week"]
+    },
+    "substances": {
+      "baseline": "Moderate alcohol consumption on weekends.",
+      "smartGoals": ["Limit alcohol to 2 drinks per occasion, maximum twice per week"],
+      "trackingKpis": ["Weekly alcohol consumption log"]
+    },
+    "stressManagement": {
+      "baseline": "High work stress with no current coping strategies.",
+      "smartGoals": ["Practice 5-minute breathing exercises twice daily for 2 weeks"],
+      "trackingKpis": ["Daily breathing exercise completion"]
+    },
+    "sleep": {
+      "baseline": "Irregular sleep schedule, averaging 5-6 hours per night.",
+      "smartGoals": ["Establish consistent bedtime of 10:30 PM within 3 weeks"],
+      "trackingKpis": ["Bedtime consistency tracking"]
+    },
+    "socialConnections": {
+      "baseline": "Limited social interactions outside of work.",
+      "smartGoals": ["Schedule one social activity with friends or family per week"],
+      "trackingKpis": ["Weekly social activities logged"]
+    }
+  }
+}

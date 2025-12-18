@@ -4,9 +4,9 @@ from typing import Optional
 import typer
 
 from config import settings
-from llm.plan_generator import PlanGenerationError, generate_lifestyle_plan
 from transcription.elevenlabs_provider import ElevenLabsProvider
 from transcription.whisper_provider import WhisperProvider
+from utils.frontend_export import export_frontend_data
 from utils.io_utils import save_failure_outputs, save_session_outputs
 from utils.logging_utils import get_logger
 
@@ -40,7 +40,11 @@ def _load_transcript_json(transcript_path: Path):
 def _choose_provider(name: str):
     provider = name.lower()
     if provider == "whisper":
-        return WhisperProvider(api_key=settings.openai_api_key, model_name=settings.openai_transcribe_model)
+        if not settings.openai_api_key:
+            raise typer.BadParameter("OPENAI_API_KEY is required to use Whisper STT.")
+        api_key = settings.openai_api_key
+        assert api_key
+        return WhisperProvider(api_key=api_key, model_name=settings.openai_transcribe_model)
     if provider == "elevenlabs":
         if not settings.elevenlabs_api_key:
             raise typer.BadParameter("ELEVENLABS_API_KEY is required to use ElevenLabs STT.")
@@ -66,6 +70,11 @@ def process_local_audio(
     """
     Transcribe a local audio file, generate a lifestyle plan, and persist outputs to disk.
     """
+    if not settings.openai_api_key:
+        raise typer.BadParameter("OPENAI_API_KEY is required to run the pipeline (plan generation).")
+
+    from llm.plan_generator import PlanGenerationError, generate_lifestyle_plan
+
     chosen_provider = provider or settings.default_transcription_provider
     session_identifier = session_id or audio_path.stem
 
@@ -101,6 +110,26 @@ def process_local_audio(
     else:
         session_dir = save_session_outputs(session_identifier, transcript, plan)
         typer.echo(f"Session artifacts written to: {session_dir}")
+
+
+@app.command("export-frontend-data")
+def export_frontend_data_cmd(
+    out_dir: Path = typer.Option(
+        Path("./frontend_data"),
+        help="Directory to write frontend-friendly JSON (meetings list + per-meeting detail).",
+    ),
+    source_output_dir: Optional[Path] = typer.Option(
+        None,
+        help="Optional source output directory to scan; defaults to OUTPUT_DIR from config.",
+    ),
+):
+    """
+    Export JSON in a frontend-friendly shape (camelCase) from on-disk artifacts.
+
+    This is intended for the initial hosted UI prototype (v0 / Next.js) before a real backend exists.
+    """
+    written = export_frontend_data(out_dir=out_dir, source_output_dir=source_output_dir)
+    typer.echo(f"Wrote {written['meetings']} meetings to: {out_dir}")
 
 
 @app.command("process-meeting-transcript")
