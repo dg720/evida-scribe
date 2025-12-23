@@ -3,9 +3,7 @@
   "services": [
     {
       "name": "evida-scribe-api",
-      "source": {
-        "rootDirectory": "."
-      },
+      "rootDirectory": ".",
       "build": {
         "builder": "NIXPACKS",
         "buildCommand": "pip install -r requirements.txt"
@@ -28,9 +26,7 @@
     },
     {
       "name": "evida-scribe-frontend",
-      "source": {
-        "rootDirectory": "next-js-meeting-dashboard"
-      },
+      "rootDirectory": "next-js-meeting-dashboard",
       "build": {
         "builder": "NIXPACKS",
         "buildCommand": "npm ci && npm run build"
