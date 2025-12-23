@@ -124,7 +124,10 @@ def _output_dir() -> Path:
 
 def _seed_data_dir() -> Path:
     # Seed data shipped with the repo so the UI isn't empty on ephemeral deployments.
-    return Path(os.getenv("SEED_DATA_DIR", "./examples/seed_data"))
+    env_value = os.getenv("SEED_DATA_DIR")
+    if env_value:
+        return Path(env_value)
+    return Path(__file__).resolve().parents[1] / "examples" / "seed_data"
 
 
 def _load_seed_meetings() -> tuple[list[Dict[str, Any]], dict[str, Dict[str, Any]]]:
