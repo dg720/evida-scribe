@@ -21,7 +21,7 @@ This repo supports an “always-on” FastAPI service on Render that:
 
 ## Deploy using Render Blueprint
 
-This repo includes a Render blueprint file: `render.yaml`.
+This repo includes a Render blueprint file archived at `docs/archived/render/render.yaml`.
 
 1) Push this repo to GitHub.
 2) In Render, click **New +** → **Blueprint**.
@@ -37,7 +37,7 @@ This repo includes a Render blueprint file: `render.yaml`.
    - `MEETING_API_BASE_URL` points to your backend URL (update if you renamed services or use a custom domain).
 
 ### Free tier notes
-- The included `render.yaml` is configured for the free tier and uses `OUTPUT_DIR=/tmp/output`.
+- The included `docs/archived/render/render.yaml` is configured for the free tier and uses `OUTPUT_DIR=/tmp/output`.
 - This is ephemeral: data may be lost on restart/redeploy and free services may sleep when idle (webhooks can be unreliable).
 - To avoid an “empty dashboard” after a restart, the API also serves demo seed meetings shipped in `examples/seed_data/`.
 

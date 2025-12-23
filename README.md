@@ -42,6 +42,7 @@ Use Railway for faster paid instances and persistent storage. A ready-to-use Rai
 - `railway.json` (see `docs/RAILWAY_DEPLOY.md`)
 
 ## Render (free tier) note
+Legacy Render notes are archived at `docs/archived/render/RENDER_DEPLOY.md`.
 If you deploy the backend on Render free tier, the filesystem is ephemeral and the service may sleep when idle. For demos that’s fine; for reliable webhooks + durable storage, use a paid tier with a persistent disk.
 
 ## One-command local dev (API + webhook + frontend)
