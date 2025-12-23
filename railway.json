@@ -1,0 +1,46 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "services": [
+    {
+      "name": "evida-scribe-api",
+      "source": {
+        "rootDirectory": "."
+      },
+      "build": {
+        "builder": "NIXPACKS",
+        "buildCommand": "pip install -r requirements.txt"
+      },
+      "deploy": {
+        "startCommand": "uvicorn server.api:app --host 0.0.0.0 --port $PORT",
+        "healthcheckPath": "/healthz"
+      },
+      "variables": {
+        "OUTPUT_DIR": "/data/output",
+        "SEED_DATA_DIR": "/app/examples/seed_data",
+        "CORS_ORIGINS": "*"
+      },
+      "volumes": [
+        {
+          "name": "output",
+          "mountPath": "/data"
+        }
+      ]
+    },
+    {
+      "name": "evida-scribe-frontend",
+      "source": {
+        "rootDirectory": "next-js-meeting-dashboard"
+      },
+      "build": {
+        "builder": "NIXPACKS",
+        "buildCommand": "npm ci && npm run build"
+      },
+      "deploy": {
+        "startCommand": "npm run start -- -p $PORT"
+      },
+      "variables": {
+        "MEETING_API_BASE_URL": "https://<your-backend-domain>"
+      }
+    }
+  ]
+}

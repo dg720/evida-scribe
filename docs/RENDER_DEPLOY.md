@@ -1,5 +1,7 @@
 # Render Deployment (Option 2A: Single Backend Service + Persistent Disk)
 
+If you prefer Railway, see `docs/RAILWAY_DEPLOY.md`.
+
 This repo supports an “always-on” FastAPI service on Render that:
 - Serves meetings live from `OUTPUT_DIR` (default `./output`)
 - Receives ElevenLabs post-call transcripts at `POST /elevenlabs/webhook`

@@ -37,6 +37,10 @@ The uploaded v0 project lives at `next-js-meeting-dashboard/`. It can use either
 - Static JSON: reads from `next-js-meeting-dashboard/frontend_data/` (default)
 - Live API: set `MEETING_API_BASE_URL=http://localhost:8000` in the Next.js environment and it will fetch from the backend instead of filesystem.
 
+## Railway (recommended)
+Use Railway for faster paid instances and persistent storage. A ready-to-use Railway blueprint is included:
+- `railway.json` (see `docs/RAILWAY_DEPLOY.md`)
+
 ## Render (free tier) note
 If you deploy the backend on Render free tier, the filesystem is ephemeral and the service may sleep when idle. For demos that’s fine; for reliable webhooks + durable storage, use a paid tier with a persistent disk.
 
