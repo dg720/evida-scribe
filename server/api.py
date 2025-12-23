@@ -98,6 +98,35 @@ def _convert_transcript(transcript_snake: Dict[str, Any]) -> Dict[str, Any]:
     return {"rawText": transcript_snake.get("raw_text", "") or "", "utterances": utterances}
 
 
+def _preview_from_transcript(transcript_raw: Dict[str, Any]) -> str:
+    """
+    Prefer the first non-bot utterance for preview text; fallback to raw text.
+    """
+    if not isinstance(transcript_raw, dict):
+        return ""
+    utterances = transcript_raw.get("transcript") or transcript_raw.get("utterances") or []
+    if isinstance(utterances, list):
+        def is_bot_speaker(speaker: str) -> bool:
+            return speaker in {"agent", "assistant", "bot", "coach", "system"}
+
+        first_text = ""
+        for u in utterances:
+            if not isinstance(u, dict):
+                continue
+            text = str(u.get("text") or "").strip()
+            speaker = str(u.get("speaker") or "").strip().lower()
+            if not text:
+                continue
+            if not first_text:
+                first_text = text
+            if speaker and not is_bot_speaker(speaker):
+                return text
+        if first_text:
+            return first_text
+    raw_text = transcript_raw.get("raw_text") or transcript_raw.get("rawText") or ""
+    return str(raw_text).strip()
+
+
 def _derive_status(session_dir: Path) -> str:
     if (session_dir / "plan_failure.txt").exists():
         return "failed"
@@ -425,7 +454,7 @@ def list_meetings() -> List[Dict[str, Any]]:
 
             preview_source = ""
             if transcript_raw:
-                preview_source = (transcript_raw.get("raw_text") or "").strip()
+                preview_source = _preview_from_transcript(transcript_raw)
             preview = (preview_source[:180] + "…") if len(preview_source) > 180 else preview_source
 
             meetings.append(
@@ -476,7 +505,7 @@ def get_meeting(meeting_id: str) -> Dict[str, Any]:
 
     preview_source = ""
     if transcript_raw:
-        preview_source = (transcript_raw.get("raw_text") or "").strip()
+        preview_source = _preview_from_transcript(transcript_raw)
     preview = (preview_source[:180] + "…") if len(preview_source) > 180 else preview_source
 
     detail: Dict[str, Any] = {
