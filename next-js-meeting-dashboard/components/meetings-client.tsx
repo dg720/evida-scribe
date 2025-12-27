@@ -71,6 +71,7 @@ export function MeetingsClient({ meetings }: MeetingsClientProps) {
   const filteredMeetings = useMemo(() => {
     return meetings.filter((meeting) => {
       const matchesSearch =
+        meeting.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         meeting.patientDisplayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         meeting.preview.toLowerCase().includes(searchQuery.toLowerCase())
       const matchesStatus = statusFilter === "all" || meeting.status === statusFilter
@@ -157,7 +158,7 @@ export function MeetingsClient({ meetings }: MeetingsClientProps) {
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by summary or content..."
+              placeholder="Search by meeting id or content..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
@@ -236,49 +237,53 @@ export function MeetingsClient({ meetings }: MeetingsClientProps) {
           </div>
         ) : (
           <Card>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Summary</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Preview</TableHead>
-                  <TableHead className="text-right" />
-                  <TableHead className="text-right" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredMeetings.map((meeting) => (
-                  <TableRow key={meeting.id}>
-                    <TableCell className="font-medium">{meeting.patientDisplayName}</TableCell>
-                    <TableCell className="text-muted-foreground whitespace-nowrap">
-                      {formatDate(meeting.createdAt)}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={statusConfig[meeting.status].variant}>{statusConfig[meeting.status].label}</Badge>
-                    </TableCell>
-                    <TableCell className="max-w-md">
-                      <p className="line-clamp-2 text-sm text-muted-foreground">{meeting.preview}</p>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(meeting)}
-                        disabled={isRefreshing}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Link href={`/meetings/${meeting.id}`}>
-                        <Button size="sm">View</Button>
-                      </Link>
-                    </TableCell>
+            <CardContent className="p-2">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Meeting Id</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Preview</TableHead>
+                    <TableHead className="text-right" />
+                    <TableHead className="text-right" />
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredMeetings.map((meeting) => (
+                    <TableRow key={meeting.id}>
+                      <TableCell className="font-medium">{meeting.id}</TableCell>
+                      <TableCell className="text-muted-foreground whitespace-nowrap">
+                        {formatDate(meeting.createdAt)}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={statusConfig[meeting.status].variant}>
+                          {statusConfig[meeting.status].label}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="max-w-md">
+                        <p className="line-clamp-2 text-sm text-muted-foreground">{meeting.preview}</p>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDelete(meeting)}
+                          disabled={isRefreshing}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Link href={`/meetings/${meeting.id}`}>
+                          <Button size="sm">View</Button>
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
           </Card>
         )}
       </TabsContent>
