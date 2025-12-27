@@ -46,18 +46,12 @@ export async function getMeetings(): Promise<MeetingListItem[]> {
       return await fetchJson<MeetingListItem[]>(`${base}/api/meetings`)
     } catch (error) {
       console.error("[SERVER] Error fetching from API:", error)
-      return []
+      // Fallback to local static data when the API is unavailable.
+      return readLocalMeetings()
     }
   }
 
-  try {
-    const filePath = join(DATA_DIR, "meetings.json")
-    const content = await readFile(filePath, "utf-8")
-    return JSON.parse(content)
-  } catch (error) {
-    console.error("Error reading meetings list:", error)
-    return []
-  }
+  return readLocalMeetings()
 }
 
 export async function getMeeting(id: string): Promise<MeetingDetail | null> {
@@ -67,18 +61,12 @@ export async function getMeeting(id: string): Promise<MeetingDetail | null> {
       return await fetchJson<MeetingDetail>(`${base}/api/meetings/${encodeURIComponent(id)}`)
     } catch (error) {
       console.error("[SERVER] Error fetching from API:", error)
-      return null
+      // Fallback to local static data when the API is unavailable.
+      return readLocalMeeting(id)
     }
   }
 
-  try {
-    const filePath = join(DATA_DIR, "meetings", `${id}.json`)
-    const content = await readFile(filePath, "utf-8")
-    return JSON.parse(content)
-  } catch (error) {
-    console.error(`Error reading meeting ${id}:`, error)
-    return null
-  }
+  return readLocalMeeting(id)
 }
 
 export async function getAllMeetingIds(): Promise<string[]> {
@@ -94,5 +82,27 @@ export async function getAllMeetingIds(): Promise<string[]> {
   } catch (error) {
     console.error("Error reading meeting IDs:", error)
     return []
+  }
+}
+
+async function readLocalMeetings(): Promise<MeetingListItem[]> {
+  try {
+    const filePath = join(DATA_DIR, "meetings.json")
+    const content = await readFile(filePath, "utf-8")
+    return JSON.parse(content)
+  } catch (error) {
+    console.error("Error reading meetings list:", error)
+    return []
+  }
+}
+
+async function readLocalMeeting(id: string): Promise<MeetingDetail | null> {
+  try {
+    const filePath = join(DATA_DIR, "meetings", `${id}.json`)
+    const content = await readFile(filePath, "utf-8")
+    return JSON.parse(content)
+  } catch (error) {
+    console.error(`Error reading meeting ${id}:`, error)
+    return null
   }
 }
