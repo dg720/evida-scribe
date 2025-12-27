@@ -39,6 +39,9 @@ export function MeetingDetailClient({ meeting }: MeetingDetailClientProps) {
   const router = useRouter()
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, startSave] = useTransition()
+  const [isEditingTitle, setIsEditingTitle] = useState(false)
+  const [isSavingTitle, startTitleSave] = useTransition()
+  const [titleDraft, setTitleDraft] = useState(meeting.patientDisplayName)
 
   const initialPlan = useMemo(() => {
     return meeting.plan ?? null
@@ -52,7 +55,36 @@ export function MeetingDetailClient({ meeting }: MeetingDetailClientProps) {
   useEffect(() => {
     setEditablePlan(initialPlan)
     setDisplayPlan(initialPlan)
-  }, [initialPlan])
+    setTitleDraft(meeting.patientDisplayName)
+    setIsEditingTitle(false)
+  }, [initialPlan, meeting.patientDisplayName])
+
+  const handleSaveTitle = () => {
+    const nextTitle = titleDraft.trim()
+    if (!nextTitle) {
+      toast({ title: "Title cannot be empty", variant: "destructive" })
+      return
+    }
+    startTitleSave(async () => {
+      try {
+        const res = await fetch(`/api/meetings/${encodeURIComponent(meeting.id)}/meta`, {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ patientDisplayName: nextTitle }),
+        })
+        if (!res.ok) throw new Error(await res.text())
+        toast({ title: "Title updated" })
+        setIsEditingTitle(false)
+        router.refresh()
+      } catch (err) {
+        toast({
+          title: "Update failed",
+          description: err instanceof Error ? err.message : "Unexpected error",
+          variant: "destructive",
+        })
+      }
+    })
+  }
 
   const handleCopyTranscript = () => {
     if (meeting.transcript) {
@@ -162,9 +194,41 @@ export function MeetingDetailClient({ meeting }: MeetingDetailClientProps) {
         {/* Header */}
         <div className="mb-6 space-y-4">
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">{meeting.patientDisplayName}</h1>
-              <p className="text-muted-foreground mt-1">{formatDate(meeting.createdAt)}</p>
+            <div className="space-y-2">
+              {isEditingTitle ? (
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                  <input
+                    className="w-full max-w-xl rounded-md border bg-background px-3 py-2 text-base font-semibold outline-none focus:ring-2 focus:ring-ring"
+                    value={titleDraft}
+                    onChange={(e) => setTitleDraft(e.target.value)}
+                  />
+                  <div className="flex gap-2">
+                    <Button size="sm" onClick={handleSaveTitle} disabled={isSavingTitle}>
+                      {isSavingTitle ? "Saving..." : "Save"}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setTitleDraft(meeting.patientDisplayName)
+                        setIsEditingTitle(false)
+                      }}
+                      disabled={isSavingTitle}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <h1 className="text-3xl font-bold tracking-tight">{meeting.patientDisplayName}</h1>
+                  <Button variant="ghost" size="sm" onClick={() => setIsEditingTitle(true)}>
+                    <Pencil className="h-4 w-4 mr-2" />
+                    Edit Title
+                  </Button>
+                </div>
+              )}
+              <p className="text-muted-foreground">{formatDate(meeting.createdAt)}</p>
             </div>
             <Badge variant={statusConfig[meeting.status].variant} className="self-start">
               {statusConfig[meeting.status].label}

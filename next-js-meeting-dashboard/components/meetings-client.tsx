@@ -158,7 +158,7 @@ export function MeetingsClient({ meetings }: MeetingsClientProps) {
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by meeting id or content..."
+              placeholder="Search by summary, meeting id, or content..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
@@ -241,7 +241,7 @@ export function MeetingsClient({ meetings }: MeetingsClientProps) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Meeting Id</TableHead>
+                  <TableHead>Summary</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Preview</TableHead>
@@ -252,7 +252,7 @@ export function MeetingsClient({ meetings }: MeetingsClientProps) {
                 <TableBody>
                   {filteredMeetings.map((meeting) => (
                     <TableRow key={meeting.id}>
-                      <TableCell className="font-medium">{meeting.id}</TableCell>
+                      <TableCell className="font-medium">{meeting.patientDisplayName || meeting.id}</TableCell>
                       <TableCell className="text-muted-foreground whitespace-nowrap">
                         {formatDate(meeting.createdAt)}
                       </TableCell>

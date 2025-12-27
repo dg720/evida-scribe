@@ -618,3 +618,32 @@ async def update_meeting_plan(meeting_id: str, request: Request):
             f.write("\n\n")
 
     return {"status": "ok"}
+
+
+@app.put("/api/meetings/{meeting_id}/meta")
+async def update_meeting_meta(meeting_id: str, request: Request):
+    """
+    Update meeting metadata (currently patientDisplayName only).
+    """
+    base = _output_dir()
+    session_dir = _safe_session_dir(base, meeting_id)
+    if not session_dir.exists() or not session_dir.is_dir():
+        raise HTTPException(status_code=404, detail="Meeting not found")
+
+    try:
+        payload = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON")
+
+    name = payload.get("patientDisplayName") if isinstance(payload, dict) else None
+    if not isinstance(name, str) or not name.strip():
+        raise HTTPException(status_code=400, detail='Missing field "patientDisplayName"')
+
+    meta_path = session_dir / "session_meta.json"
+    meta = _read_json(meta_path) or {}
+    meta["patientDisplayName"] = name.strip()
+
+    with open(meta_path, "w", encoding="utf-8") as f:
+        json.dump(meta, f, indent=2, ensure_ascii=False)
+
+    return {"status": "ok", "patientDisplayName": meta["patientDisplayName"]}
