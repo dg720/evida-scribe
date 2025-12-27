@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   title: "Evida Scribe",
   description: "Review meeting transcripts and generated lifestyle plans in a clean, clinical dashboard.",
   icons: {
-    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    icon: [{ url: "/evida-icon.png", type: "image/png" }],
   },
 }
 
